@@ -33,13 +33,14 @@ const POSES: Record<Pose, Record<ArmPose, [number, number, number, number]>> = {
   },
 }
 
-const SKIN = '#c98a5e'
-const SKIN_SHADE = '#a96f45'
-const HAIR = '#17110e'
-const BEARD = '#2a1d17'
-const SHIRT = '#f2efe9'
-const SHIRT_SHADE = '#d9d3c8'
-const PANTS = '#262626'
+const SKIN = '#b9784d'
+const SKIN_SHADE = '#9a5f3a'
+const HAIR = '#121010'
+const BEARD = '#1d1512'
+const SHIRT = '#c8a27c'
+const SNEAKER = '#f2efe9'
+const SHIRT_SHADE = '#a9845f'
+const PANTS = '#141414'
 const CHAIR = '#1b1b1b'
 const EMBER = '#ff5a1f'
 
@@ -383,8 +384,8 @@ export default function Character({ pose, enter = false, snapSignal = 0, idleMov
               <path d="M150 386 h100 c10 0 16 10 14 22 l-6 18 h-116 l-6 -18 c-2 -12 4 -22 14 -22z" fill={PANTS} />
               <rect x="152" y="418" width="38" height="78" rx="16" fill={PANTS} />
               <rect x="210" y="418" width="38" height="78" rx="16" fill={PANTS} />
-              <path d="M146 492 h46 c6 0 8 8 4 14 h-54 c-4 -6 -2 -14 4 -14z" fill={SHIRT} />
-              <path d="M208 492 h46 c6 0 8 8 4 14 h-54 c-4 -6 -2 -14 4 -14z" fill={SHIRT} />
+              <path d="M146 492 h46 c6 0 8 8 4 14 h-54 c-4 -6 -2 -14 4 -14z" fill={SNEAKER} />
+              <path d="M208 492 h46 c6 0 8 8 4 14 h-54 c-4 -6 -2 -14 4 -14z" fill={SNEAKER} />
               <rect x="142" y="504" width="56" height="5" rx="2.5" fill={EMBER} />
               <rect x="202" y="504" width="56" height="5" rx="2.5" fill={EMBER} />
             </g>
@@ -392,8 +393,8 @@ export default function Character({ pose, enter = false, snapSignal = 0, idleMov
             <g>
               <rect x="156" y="380" width="40" height="150" rx="16" fill={PANTS} />
               <rect x="204" y="380" width="40" height="150" rx="16" fill={PANTS} />
-              <path d="M146 524 h52 c6 0 8 10 4 16 h-58 c-4 -6 -4 -16 2 -16z" fill={SHIRT} />
-              <path d="M202 524 h52 c6 0 8 10 4 16 h-58 c-4 -6 -4 -16 2 -16z" fill={SHIRT} />
+              <path d="M146 524 h52 c6 0 8 10 4 16 h-58 c-4 -6 -4 -16 2 -16z" fill={SNEAKER} />
+              <path d="M202 524 h52 c6 0 8 10 4 16 h-58 c-4 -6 -4 -16 2 -16z" fill={SNEAKER} />
               <rect x="142" y="538" width="62" height="5" rx="2.5" fill={EMBER} />
               <rect x="198" y="538" width="62" height="5" rx="2.5" fill={EMBER} />
             </g>
@@ -405,18 +406,20 @@ export default function Character({ pose, enter = false, snapSignal = 0, idleMov
               d="M150 240 C150 232 170 226 186 226 L214 226 C230 226 250 232 250 240 L262 330 C264 362 258 386 250 392 L150 392 C142 386 136 362 138 330 Z"
               fill={SHIRT}
             />
-            <path d="M200 232 L200 392" stroke={SHIRT_SHADE} strokeWidth="2" />
-            {[262, 292, 322, 352].map((y) => (
-              <circle key={y} cx="206" cy={y} r="2.6" fill={SHIRT_SHADE} />
-            ))}
-            <rect x="218" y="270" width="22" height="18" rx="4" fill={EMBER} />
-            <path d="M184 226 L200 252 L216 226 Z" fill={SKIN_SHADE} />
-            <path d="M178 224 L200 252 L190 262 L170 232 Z" fill="#fff" />
-            <path d="M222 224 L200 252 L210 262 L230 232 Z" fill="#fff" />
-
+            <path d="M150 300 C170 306 230 306 250 300" stroke={SHIRT_SHADE} strokeWidth="2" fill="none" opacity="0.5" />
+            <path d="M180 226 C186 246 214 246 220 226 Z" fill={SKIN_SHADE} />
+            <path d="M178 225 C184 250 216 250 222 225" stroke={SHIRT_SHADE} strokeWidth="5" fill="none" strokeLinecap="round" />
+            {/* "INFINITY ∞ EDITION" chest print */}
+            <g fill="#2b2420" fontFamily="Anton, Impact, sans-serif" textAnchor="middle">
+              <text x="200" y="283" fontSize="10.5" letterSpacing="0.3">INFINITY</text>
+              <path d="M192 292 c-5 -6 -11 0 -6 4 c4 3 8 -1 14 -4 c6 -3 10 -7 14 -4 c5 4 -1 10 -6 4 c-5 -5 -10 -9 -16 0" stroke="#2b2420" strokeWidth="2.4" fill="none" transform="translate(-1 0)" />
+              <text x="200" y="310" fontSize="10.5" letterSpacing="0.3">EDITION</text>
+            </g>
             {/* left arm (viewer's left) */}
             <TG t={T.armL}>
-              <line x1="145" y1="250" x2="145" y2="322" stroke={SHIRT} strokeWidth="28" strokeLinecap="round" />
+              <line x1="145" y1="322" x2="145" y2="322" stroke={SKIN} strokeWidth="19" strokeLinecap="round" />
+              <line x1="145" y1="250" x2="145" y2="322" stroke={SKIN} strokeWidth="19" strokeLinecap="round" />
+              <line x1="145" y1="246" x2="145" y2="296" stroke={SHIRT} strokeWidth="32" strokeLinecap="round" />
               <TG t={T.foreL}>
                 <line x1="145" y1="322" x2="145" y2="388" stroke={SKIN} strokeWidth="19" strokeLinecap="round" />
                 <circle cx="145" cy="394" r="13" fill={SKIN} />
@@ -429,8 +432,8 @@ export default function Character({ pose, enter = false, snapSignal = 0, idleMov
               <ellipse cx="142" cy="152" rx="9" ry="14" fill={SKIN_SHADE} />
               <ellipse cx="258" cy="152" rx="9" ry="14" fill={SKIN_SHADE} />
               <ellipse cx="200" cy="148" rx="58" ry="66" fill={SKIN} />
-              <path d="M146 158 C150 204 176 218 200 218 C224 218 250 204 254 158 C246 188 226 198 200 198 C174 198 154 188 146 158 Z" fill={BEARD} opacity="0.92" />
-              <path d="M184 178 C192 172 208 172 216 178 C210 181 190 181 184 178 Z" fill={BEARD} />
+              <path d="M184 198 C186 214 194 220 200 220 C206 220 214 214 216 198 C210 204 190 204 184 198 Z" fill={BEARD} opacity="0.95" />
+              <path d="M182 181 C190 174 210 174 218 181 C211 179 189 179 182 181 Z" fill={BEARD} />
 
               {/* eyes */}
               <g opacity={tickled ? 0 : 1}>
@@ -463,17 +466,21 @@ export default function Character({ pose, enter = false, snapSignal = 0, idleMov
               {/* hair: springs a little behind the head */}
               <TG t={T.hair}>
                 <path
-                  d="M140 146 C132 92 168 66 204 66 C246 64 272 96 260 146 C254 122 240 108 222 102 C206 112 176 112 156 120 C148 128 144 136 140 146 Z"
+                  d="M142 150 C130 96 160 64 202 62 C246 60 274 92 260 150 C256 128 246 114 234 108 C224 120 200 126 176 124 C162 128 150 136 142 150 Z"
                   fill={HAIR}
                 />
-                <path d="M168 84 C178 54 214 46 238 62 C222 62 214 70 210 80 C200 70 186 74 168 84 Z" fill={HAIR} />
-                <path d="M196 74 C206 50 236 48 250 70 C236 66 226 72 222 82 Z" fill="#241a15" />
+                {/* tousled spikes */}
+                <path d="M150 96 C142 70 160 52 178 58 C170 64 168 72 170 80 C178 58 204 44 222 52 C212 56 208 62 208 70 C222 50 252 54 262 78 C250 74 242 76 238 84 C252 84 266 96 266 116 C254 100 236 94 222 96 Z" fill={HAIR} />
+                {/* fringe falling over the forehead */}
+                <path d="M166 104 C180 98 206 98 226 106 C234 118 238 132 232 142 C228 128 220 120 210 116 C206 126 196 132 184 134 C190 126 192 118 190 112 C182 118 172 120 162 120 Z" fill={HAIR} />
+                <path d="M200 70 C214 56 240 58 250 76 C238 70 226 72 220 82 Z" fill="#2a2320" />
               </TG>
             </TG>
 
             {/* right arm (viewer's right) — waves & snaps */}
             <TG t={T.armR}>
-              <line x1="255" y1="250" x2="255" y2="322" stroke={SHIRT} strokeWidth="28" strokeLinecap="round" />
+              <line x1="255" y1="250" x2="255" y2="322" stroke={SKIN} strokeWidth="19" strokeLinecap="round" />
+              <line x1="255" y1="246" x2="255" y2="296" stroke={SHIRT} strokeWidth="32" strokeLinecap="round" />
               <TG t={T.foreR}>
                 <line x1="255" y1="322" x2="255" y2="388" stroke={SKIN} strokeWidth="19" strokeLinecap="round" />
                 <TG t={T.hand}>

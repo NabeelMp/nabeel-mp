@@ -68,3 +68,8 @@ drop policy if exists "works media admin insert" on storage.objects;
 create policy "works media admin insert" on storage.objects for insert with check (bucket_id = 'works' and public.is_admin());
 drop policy if exists "works media admin delete" on storage.objects;
 create policy "works media admin delete" on storage.objects for delete using (bucket_id = 'works' and public.is_admin());
+
+-- Admin: create the user in Authentication → Users first, then this grants it admin rights.
+insert into public.admins (user_id)
+select id from auth.users where lower(email) = lower('nabeelmp3506@gmail.com')
+on conflict do nothing;

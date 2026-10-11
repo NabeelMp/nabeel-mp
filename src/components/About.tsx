@@ -55,7 +55,7 @@ export default function About() {
               </div>
               <div className="card absolute inset-0 overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)]">
                 {photoOk ? (
-                  <img src="/me.jpg" alt={profile.name} className="h-full w-full object-cover" onError={() => setPhotoOk(false)} />
+                  <img src="/me.png" alt={profile.name} className="h-full w-full object-cover" onError={() => setPhotoOk(false)} />
                 ) : (
                   <div className="grid h-full place-items-center bg-ash p-8 text-center font-display text-5xl text-bone/70">
                     THE REAL
