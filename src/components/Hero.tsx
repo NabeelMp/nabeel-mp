@@ -70,9 +70,9 @@ export default function Hero() {
       </motion.div>
 
       {stage === 'character' && (
-        <div className="absolute inset-x-0 bottom-0 flex justify-center">
-          <div className="aspect-[731/1207] h-[min(68svh,760px)] sm:h-[min(80svh,760px)] max-w-[94vw]">
-            <Character enter snapSignal={snap} onArrive={() => setArrived(true)} className="h-full w-full" />
+        <div className="absolute inset-x-0 bottom-3 flex justify-center sm:bottom-5">
+          <div className="aspect-[731/1537] h-[min(68svh,800px)] sm:h-[min(80svh,800px)] max-w-[94vw]">
+            <Character enter chair snapSignal={snap} onArrive={() => setArrived(true)} className="h-full w-full" />
           </div>
         </div>
       )}

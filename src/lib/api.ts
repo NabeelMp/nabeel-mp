@@ -22,8 +22,8 @@ export async function listWorks(category?: CategoryKey): Promise<Work[]> {
     let q = supabase.from('works').select('*').order('created_at', { ascending: false })
     if (category) q = q.eq('category', category)
     const { data, error } = await q
-    if (error) throw error
-    return (data ?? []) as Work[]
+    if (!error) return (data ?? []) as Work[]
+    console.warn('Supabase works unavailable, showing starter content:', error.message)
   }
   const all = read<Work[]>(LS_WORKS, seedWorks).sort(byNewest)
   return category ? all.filter((w) => w.category === category) : all
@@ -32,8 +32,8 @@ export async function listWorks(category?: CategoryKey): Promise<Work[]> {
 export async function getWork(category: string, slug: string): Promise<Work | null> {
   if (supabase) {
     const { data, error } = await supabase.from('works').select('*').eq('category', category).eq('slug', slug).maybeSingle()
-    if (error) throw error
-    return data as Work | null
+    if (!error) return data as Work | null
+    console.warn('Supabase works unavailable, showing starter content:', error.message)
   }
   return read<Work[]>(LS_WORKS, seedWorks).find((w) => w.category === category && w.slug === slug) ?? null
 }
@@ -65,8 +65,8 @@ export async function listReviews(opts: { workId?: string; fiveStarOnly?: boolea
     if (opts.workId) q = q.eq('work_id', opts.workId)
     if (opts.fiveStarOnly) q = q.eq('rating', 5)
     const { data, error } = await q
-    if (error) throw error
-    return (data ?? []) as Review[]
+    if (!error) return (data ?? []) as Review[]
+    console.warn('Supabase reviews unavailable, showing starter content:', error.message)
   }
   return read<Review[]>(LS_REVIEWS, seedReviews)
     .filter((r) => (opts.workId ? r.work_id === opts.workId : true))

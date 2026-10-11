@@ -1,86 +1,98 @@
 import { motion } from 'framer-motion'
-import { ArrowUpRight, Mail } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { behanceUrl, contact, instagramUrl, mailtoAll, profile, whatsappUrl } from '../lib/data'
 import { BehanceIcon, InstagramIcon, WhatsAppIcon } from './BrandIcons'
 import { Reveal, SplitWords } from './Reveal'
 import { scrollToId } from '../lib/scroll'
 
 const socials = [
-  { label: 'WhatsApp', handle: contact.whatsappDisplay, href: whatsappUrl, Icon: WhatsAppIcon },
-  { label: 'Instagram', handle: `@${contact.instagram}`, href: instagramUrl, Icon: InstagramIcon },
-  { label: 'Behance', handle: contact.behance, href: behanceUrl, Icon: BehanceIcon },
+  { label: 'WhatsApp', href: whatsappUrl, Icon: WhatsAppIcon },
+  { label: 'Instagram', href: instagramUrl, Icon: InstagramIcon },
+  { label: 'Behance', href: behanceUrl, Icon: BehanceIcon },
 ]
+const year = new Date().getFullYear()
 
 export default function Contact() {
   return (
-    <section id="contact" className="grain relative overflow-hidden bg-ink pt-24 sm:pt-32">
-      <div className="pointer-events-none absolute bottom-0 left-1/2 h-[50vh] w-[90vw] -translate-x-1/2 rounded-full bg-ember/20 blur-[140px]" />
-      <div className="container-x relative">
+    <section id="contact" className="grain relative flex min-h-[100svh] flex-col overflow-hidden bg-ink">
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[60vmin] w-[60vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-ember/15 blur-[120px]" />
+
+      <div className="container-x relative flex flex-1 flex-col items-center justify-center py-24 text-center sm:py-32">
         <Reveal>
           <p className="eyebrow">Connect · 05</p>
         </Reveal>
-        <h2 className="mt-4 font-display text-[clamp(3.5rem,12vw,11rem)] leading-[0.85]">
-          <SplitWords text="Let's build" />
-          <br />
-          <SplitWords text="something" delay={0.08} />
-          <br />
-          <SplitWords text="remarkable." className="text-ember" delay={0.16} />
+        <h2 className="mt-5 font-display text-[clamp(4rem,14vw,12rem)] leading-[0.85]">
+          <SplitWords text="Let's" />
+          <SplitWords text="talk." className="text-ember" delay={0.08} />
         </h2>
+        <Reveal delay={0.1}>
+          <p className="mx-auto mt-6 max-w-md text-[15px] leading-relaxed text-bone/55 sm:text-base">
+            Have a brand, a product or a story that needs a voice? Tell me about it.
+          </p>
+        </Reveal>
 
-        <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end">
-          <Reveal>
-            <motion.a
-              href={mailtoAll}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="group relative flex items-center justify-between gap-6 overflow-hidden rounded-[32px] bg-ember p-6 text-ink sm:p-8"
-            >
-              <span className="absolute inset-0 origin-left scale-x-0 bg-bone transition-transform duration-500 ease-out group-hover:scale-x-100" />
-              <span className="relative">
-                <span className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.3em]">
-                  <Mail size={14} /> Mail me
-                </span>
-                <span className="mt-2 block font-display text-4xl leading-none sm:text-6xl">Start your story</span>
-                <span className="mt-3 block break-all text-[12px] font-medium opacity-70 sm:text-sm">{contact.emails.join('  ·  ')}</span>
-              </span>
-              <span className="relative grid h-16 w-16 shrink-0 place-items-center rounded-full bg-ink text-bone transition-transform duration-500 group-hover:rotate-45 sm:h-20 sm:w-20">
-                <ArrowUpRight size={28} />
-              </span>
-            </motion.a>
-          </Reveal>
+        <Reveal delay={0.18} className="mt-10">
+          <motion.a
+            href={mailtoAll}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
+            className="group relative inline-flex items-center gap-4 overflow-hidden rounded-full bg-ember py-3 pl-8 pr-3 text-ink sm:py-4 sm:pl-10"
+          >
+            <span className="absolute inset-0 origin-left scale-x-0 bg-bone transition-transform duration-500 ease-out group-hover:scale-x-100" />
+            <span className="relative font-display text-2xl tracking-wide sm:text-3xl">Start a project</span>
+            <span className="relative grid h-11 w-11 place-items-center rounded-full bg-ink text-bone transition-transform duration-500 group-hover:rotate-45 sm:h-12 sm:w-12">
+              <ArrowUpRight size={20} />
+            </span>
+          </motion.a>
+        </Reveal>
 
-          <div className="grid gap-3">
-            {socials.map(({ label, handle, href, Icon }, i) => (
-              <Reveal key={label} delay={0.1 + i * 0.08}>
-                <a
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="group flex items-center justify-between rounded-2xl border border-bone/10 bg-coal/80 px-5 py-4 transition-colors hover:border-ember hover:bg-ember/10"
-                >
-                  <span className="flex items-center gap-4">
-                    <span className="grid h-11 w-11 place-items-center rounded-full bg-bone text-ink transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110">
-                      <Icon size={20} />
-                    </span>
-                    <span>
-                      <span className="block text-[10px] uppercase tracking-[0.3em] text-bone/45">{label}</span>
-                      <span className="block text-sm font-semibold">{handle}</span>
-                    </span>
-                  </span>
-                  <ArrowUpRight size={18} className="text-bone/40 transition-all group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-ember" />
+        <Reveal delay={0.24}>
+          <div className="mt-6 flex flex-col items-center gap-1 text-sm text-bone/55 sm:flex-row sm:gap-3">
+            {contact.emails.map((e, i) => (
+              <span key={e} className="flex items-center gap-3">
+                {i > 0 && <span className="hidden h-1 w-1 rounded-full bg-bone/30 sm:block" />}
+                <a href={`mailto:${e}`} className="transition-colors hover:text-ember">
+                  {e}
                 </a>
-              </Reveal>
+              </span>
             ))}
           </div>
+        </Reveal>
+
+        <div className="mt-12 flex items-center gap-4">
+          {socials.map(({ label, href, Icon }, i) => (
+            <motion.a
+              key={label}
+              href={href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={label}
+              title={label}
+              initial={{ opacity: 0, y: 20, scale: 0.6 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: false }}
+              transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.3 + i * 0.08 }}
+              whileHover={{ y: -6, rotate: i % 2 ? 8 : -8 }}
+              className="grid h-14 w-14 place-items-center rounded-full border border-bone/15 text-bone transition-colors hover:border-ember hover:bg-ember hover:text-ink"
+            >
+              <Icon size={22} />
+            </motion.a>
+          ))}
         </div>
       </div>
 
-      <footer className="container-x relative mt-24 flex flex-col items-center justify-between gap-4 border-t border-bone/10 py-8 text-[11px] uppercase tracking-[0.25em] text-bone/45 sm:flex-row">
-        <span>© {new Date().getFullYear()} {profile.name} — All rights reserved</span>
-        <span className="font-display text-2xl tracking-normal text-bone">NABEEL.</span>
-        <button onClick={() => scrollToId('home', 1400)} className="hover:text-ember">
-          Back to top ↑
-        </button>
+      <footer className="container-x relative grid grid-cols-1 items-center gap-3 border-t border-bone/10 py-6 text-center text-[10px] uppercase tracking-[0.25em] text-bone/40 sm:grid-cols-3 sm:text-left">
+        <span>© {year} {profile.name}</span>
+        <span className="font-display text-xl tracking-[0.1em] text-bone sm:text-center">NABEEL.</span>
+        <span className="flex items-center justify-center gap-5 sm:justify-end">
+          <Link to="/admin" className="transition-colors hover:text-ember">
+            Admin
+          </Link>
+          <button onClick={() => scrollToId('home', 1400)} className="uppercase transition-colors hover:text-ember">
+            Back to top ↑
+          </button>
+        </span>
       </footer>
     </section>
   )
