@@ -71,8 +71,8 @@ export default function Hero() {
 
       {stage === 'character' && (
         <div className="absolute inset-x-0 bottom-0 flex justify-center">
-          <div className="aspect-[400/560] h-[min(74svh,700px)] max-w-[94vw]">
-            <Character pose="sitting" enter snapSignal={snap} onArrive={() => setArrived(true)} className="h-full w-full" />
+          <div className="aspect-[731/1207] h-[min(68svh,760px)] sm:h-[min(80svh,760px)] max-w-[94vw]">
+            <Character enter snapSignal={snap} onArrive={() => setArrived(true)} className="h-full w-full" />
           </div>
         </div>
       )}

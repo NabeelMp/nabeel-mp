@@ -46,8 +46,8 @@ export default function About() {
               <div className="card absolute inset-0 overflow-hidden [backface-visibility:hidden]">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,90,31,.22),transparent_60%)]" />
                 <div className="absolute inset-x-0 bottom-0 top-[6%] flex justify-center">
-                  <div className="aspect-[400/560] h-full">
-                    <Character pose="standing" idleMoves snapSignal={snap} className="h-full w-full" />
+                  <div className="aspect-[731/1207] h-full">
+                    <Character idleMoves snapSignal={snap} className="h-full w-full" />
                   </div>
                 </div>
                 <span className="chip absolute left-4 top-4 bg-ink/60 backdrop-blur">hover me</span>
@@ -55,7 +55,7 @@ export default function About() {
               </div>
               <div className="card absolute inset-0 overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)]">
                 {photoOk ? (
-                  <img src="/me.png" alt={profile.name} className="h-full w-full object-cover" onError={() => setPhotoOk(false)} />
+                  <img src="/me-original.jpg" alt={profile.name} className="h-full w-full object-cover object-top" onError={() => setPhotoOk(false)} />
                 ) : (
                   <div className="grid h-full place-items-center bg-ash p-8 text-center font-display text-5xl text-bone/70">
                     THE REAL

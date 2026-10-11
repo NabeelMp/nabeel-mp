@@ -5,7 +5,6 @@ import CategoryPage from './pages/CategoryPage'
 import WorkPage from './pages/WorkPage'
 import Admin from './pages/Admin'
 import NotFound from './pages/NotFound'
-import CursorDot from './components/CursorDot'
 
 function ScrollReset() {
   const { pathname, hash } = useLocation()
@@ -19,7 +18,6 @@ export default function App() {
   return (
     <>
       <ScrollReset />
-      <CursorDot />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/projects/:category" element={<CategoryPage />} />
