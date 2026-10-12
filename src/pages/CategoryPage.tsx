@@ -3,14 +3,15 @@ import { Link, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react'
 import PageShell from '../components/PageShell'
-import { categories, categoryByKey } from '../lib/data'
+import { useSite } from '../lib/site'
 import { listWorks } from '../lib/api'
 import type { Work } from '../lib/types'
 import NotFound from './NotFound'
 
 export default function CategoryPage() {
+  const { site } = useSite()
   const { category } = useParams()
-  const cat = categoryByKey(category)
+  const cat = site.categories.find((c) => c.key === category)
   const [works, setWorks] = useState<Work[] | null>(null)
 
   useEffect(() => {
@@ -20,9 +21,10 @@ export default function CategoryPage() {
   }, [cat])
 
   if (!cat) return <NotFound />
-  const idx = categories.findIndex((c) => c.key === cat.key)
-  const prev = categories[(idx - 1 + categories.length) % categories.length]
-  const next = categories[(idx + 1) % categories.length]
+  const list = site.categories
+  const idx = list.findIndex((c) => c.key === cat.key)
+  const prev = list[(idx - 1 + list.length) % list.length]
+  const next = list[(idx + 1) % list.length]
 
   return (
     <PageShell>

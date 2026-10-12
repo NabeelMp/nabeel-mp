@@ -3,7 +3,7 @@ import { animate, motion, useInView } from 'framer-motion'
 import Character from './Character'
 import { Reveal, SplitWords } from './Reveal'
 import { useSnapScroll } from '../hooks/useSnapScroll'
-import { profile } from '../lib/data'
+import { useSite } from '../lib/site'
 
 function Counter({ to, suffix }: { to: number; suffix: string }) {
   const ref = useRef<HTMLSpanElement>(null)
@@ -17,6 +17,8 @@ function Counter({ to, suffix }: { to: number; suffix: string }) {
 }
 
 export default function About() {
+  const { site } = useSite()
+  const profile = site.profile
   const ref = useRef<HTMLElement>(null)
   const [snap, setSnap] = useState(0)
   const [flipped, setFlipped] = useState(false)

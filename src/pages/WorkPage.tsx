@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react'
 import PageShell from '../components/PageShell'
 import ReviewForm from '../components/ReviewForm'
 import Stars from '../components/Stars'
-import { categoryByKey } from '../lib/data'
+import { useSite } from '../lib/site'
 import { getWork, listReviews, listWorks } from '../lib/api'
 import type { Review, Work } from '../lib/types'
 import NotFound from './NotFound'
@@ -26,8 +26,9 @@ function Video({ url }: { url: string }) {
 }
 
 export default function WorkPage() {
+  const { site } = useSite()
   const { category = '', slug = '' } = useParams()
-  const cat = categoryByKey(category)
+  const cat = site.categories.find((c) => c.key === category)
   const [work, setWork] = useState<Work | null | undefined>(undefined)
   const [siblings, setSiblings] = useState<Work[]>([])
   const [reviews, setReviews] = useState<Review[]>([])

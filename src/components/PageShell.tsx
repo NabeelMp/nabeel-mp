@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import Nav from './Nav'
-import { profile } from '../lib/data'
+import { useSite } from '../lib/site'
 
 export default function PageShell({ children }: { children: ReactNode }) {
+  const { site } = useSite()
   return (
     <>
       <Nav alwaysVisible />
@@ -16,8 +17,8 @@ export default function PageShell({ children }: { children: ReactNode }) {
         {children}
       </motion.main>
       <footer className="container-x flex flex-col items-center justify-between gap-3 border-t border-bone/10 py-8 text-[11px] uppercase tracking-[0.25em] text-bone/45 sm:flex-row">
-        <span>© {new Date().getFullYear()} {profile.name}</span>
-        <span className="font-display text-2xl tracking-normal text-bone">NABEEL.</span>
+        <span>© {new Date().getFullYear()} {site.profile.name}</span>
+        <span className="font-display text-2xl tracking-normal text-bone">{site.footer.tagline}</span>
       </footer>
     </>
   )

@@ -1,19 +1,29 @@
 import { motion } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { behanceUrl, contact, instagramUrl, mailtoAll, profile, whatsappUrl } from '../lib/data'
+import { useSite } from '../lib/site'
 import { BehanceIcon, InstagramIcon, WhatsAppIcon } from './BrandIcons'
 import { Reveal, SplitWords } from './Reveal'
 import { scrollToId } from '../lib/scroll'
 
-const socials = [
-  { label: 'WhatsApp', href: whatsappUrl, Icon: WhatsAppIcon },
-  { label: 'Instagram', href: instagramUrl, Icon: InstagramIcon },
-  { label: 'Behance', href: behanceUrl, Icon: BehanceIcon },
-]
 const year = new Date().getFullYear()
 
 export default function Contact() {
+  const { site } = useSite()
+  const { contact, profile, footer } = site
+  const mailtoAll = `mailto:${contact.emails.join(',')}?subject=${encodeURIComponent(
+    "Let's build something remarkable",
+  )}`
+  const whatsappUrl = `https://wa.me/${contact.whatsappNumber}?text=${encodeURIComponent(
+    'Hi Nabeel! I saw your portfolio and would love to talk.',
+  )}`
+  const instagramUrl = `https://www.instagram.com/${contact.instagram}/`
+  const behanceUrl = `https://www.behance.net/${contact.behance}`
+  const socials = [
+    { label: 'WhatsApp', href: whatsappUrl, Icon: WhatsAppIcon },
+    { label: 'Instagram', href: instagramUrl, Icon: InstagramIcon },
+    { label: 'Behance', href: behanceUrl, Icon: BehanceIcon },
+  ]
   return (
     <section id="contact" className="grain relative flex min-h-[100svh] flex-col overflow-hidden bg-ink">
       <div className="pointer-events-none absolute left-1/2 top-1/2 h-[60vmin] w-[60vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-ember/15 blur-[120px]" />
@@ -84,14 +94,18 @@ export default function Contact() {
 
       <footer className="container-x relative grid grid-cols-1 items-center gap-3 border-t border-bone/10 py-6 text-center text-[10px] uppercase tracking-[0.25em] text-bone/40 sm:grid-cols-3 sm:text-left">
         <span>© {year} {profile.name}</span>
-        <span className="font-display text-xl tracking-[0.1em] text-bone sm:text-center">NABEEL.</span>
+        <span className="font-display text-xl tracking-[0.1em] text-bone sm:text-center">{footer.tagline}</span>
         <span className="flex items-center justify-center gap-5 sm:justify-end">
-          <Link to="/admin" className="transition-colors hover:text-ember">
-            Admin
-          </Link>
-          <button onClick={() => scrollToId('home', 1400)} className="uppercase transition-colors hover:text-ember">
-            Back to top ↑
-          </button>
+          {footer.showAdmin && (
+            <Link to="/admin" className="transition-colors hover:text-ember">
+              {footer.adminLabel}
+            </Link>
+          )}
+          {footer.showBackToTop && (
+            <button onClick={() => scrollToId('home', 1400)} className="uppercase transition-colors hover:text-ember">
+              {footer.backToTopLabel}
+            </button>
+          )}
         </span>
       </footer>
     </section>

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
-import { categories } from '../lib/data'
+import { useSite } from '../lib/site'
 import { listWorks } from '../lib/api'
 import type { Category, Work } from '../lib/types'
 import { Reveal, SplitWords } from './Reveal'
@@ -98,6 +98,7 @@ function Tile({ c, works, i }: { c: Category; works: Work[]; i: number }) {
 }
 
 export default function Projects() {
+  const { site } = useSite()
   const [works, setWorks] = useState<Work[]>([])
   useEffect(() => {
     listWorks().then(setWorks).catch(console.error)
@@ -125,7 +126,7 @@ export default function Projects() {
         </div>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((c, i) => (
+          {site.categories.map((c, i) => (
             <Tile key={c.key} c={c} i={i} works={works.filter((w) => w.category === c.key)} />
           ))}
         </div>

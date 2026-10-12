@@ -1,12 +1,14 @@
 import { motion } from 'framer-motion'
 import { Box, Clapperboard, Layers, Package, PenTool, Sparkles, type LucideIcon } from 'lucide-react'
-import { process, services } from '../lib/data'
+import { useSite } from '../lib/site'
 import { Reveal, SplitWords } from './Reveal'
 
 const ICONS: LucideIcon[] = [Sparkles, PenTool, Layers, Package, Clapperboard, Box]
 const ease = [0.16, 1, 0.3, 1] as const
 
 export default function WhatIDo() {
+  const { site } = useSite()
+  const { services, process } = site
   return (
     <section id="what-i-do" className="relative bg-bone py-24 text-ink sm:py-32">
       <div className="container-x">

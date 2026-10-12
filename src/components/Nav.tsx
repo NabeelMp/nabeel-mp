@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Menu, X, Lock } from 'lucide-react'
 import { scrollToId } from '../lib/scroll'
+import { useSite } from '../lib/site'
 
 const LINKS = [
   { id: 'home', label: 'Home' },
@@ -19,6 +20,7 @@ export default function Nav({ alwaysVisible = false }: { alwaysVisible?: boolean
   const [open, setOpen] = useState(false)
   const { pathname } = useLocation()
   const navigate = useNavigate()
+  const { site } = useSite()
 
   useEffect(() => {
     if (alwaysVisible) return
@@ -61,7 +63,7 @@ export default function Nav({ alwaysVisible = false }: { alwaysVisible?: boolean
             <nav className="mx-auto flex w-[min(94vw,980px)] items-center justify-between rounded-full border border-bone/10 bg-ink/70 py-2 pl-5 pr-2 backdrop-blur-xl">
               <Link to="/" onClick={() => go('home')} className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-ember" />
-                <span className="text-[11px] font-bold tracking-[0.4em]">NABEEL</span>
+                <span className="text-[11px] font-bold tracking-[0.4em]">{site.profile.short.toUpperCase()}</span>
               </Link>
               <ul className="hidden items-center gap-1 md:flex">
                 {LINKS.map((l) => (
