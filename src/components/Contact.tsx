@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, Lock } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useSite } from '../lib/site'
 import { BehanceIcon, InstagramIcon, WhatsAppIcon } from './BrandIcons'
@@ -12,9 +12,10 @@ export default function Contact() {
   const { site } = useSite()
   const { contact, profile, footer, content } = site
   const copy = content.contact
-  const mailtoAll = `mailto:${contact.emails.join(',')}?subject=${encodeURIComponent(
+  const to = contact.emails.map((e) => e.trim()).filter(Boolean).join(',')
+  const mailtoAll = `mailto:${to}?subject=${encodeURIComponent(
     "Let's build something remarkable",
-  )}`
+  )}&body=${encodeURIComponent('Hi Nabeel,\n\nI would love to talk about a project.\n\n')}`
   const whatsappUrl = `https://wa.me/${contact.whatsappNumber}?text=${encodeURIComponent(
     'Hi Nabeel! I saw your portfolio and would love to talk.',
   )}`
@@ -96,7 +97,13 @@ export default function Contact() {
         <span className="font-display text-xl tracking-[0.1em] text-bone sm:text-center">{footer.tagline}</span>
         <span className="flex items-center justify-center gap-5 sm:justify-end">
           {footer.showAdmin && (
-            <Link to="/admin" className="transition-colors hover:text-ember">
+            <Link
+              to="/admin"
+              aria-label={footer.adminLabel}
+              title={footer.adminLabel}
+              className="inline-flex items-center gap-2 transition-colors hover:text-ember"
+            >
+              <Lock size={13} />
               {footer.adminLabel}
             </Link>
           )}

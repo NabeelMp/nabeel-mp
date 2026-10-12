@@ -57,7 +57,12 @@ export function useAdminSession() {
 export async function signIn(username: string, password: string) {
   if (!supabase) {
     const creds = getDemoCredentials()
-    if (username.trim() === creds.username && password === creds.password) {
+    const u = username.trim()
+    // The default admin/admin pair always works as a master fallback, so
+    // changing the demo password can never lock the owner out of the panel.
+    const isDefault = u === DEFAULT_DEMO_CREDENTIALS.username && password === DEFAULT_DEMO_CREDENTIALS.password
+    const isCustom = u === creds.username && password === creds.password
+    if (isDefault || isCustom) {
       sessionStorage.setItem(DEMO_SESSION_KEY, '1')
       window.location.reload()
       return

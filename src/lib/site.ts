@@ -187,7 +187,7 @@ export const defaultSite: SiteContent = {
   categories: [
     { key: 'branding', index: '01', title: 'Branding', short: 'Identity', accent: '#ff5a1f', blurb: 'Identity systems, logos and brand worlds with a spine.' },
     { key: 'packaging', index: '02', title: 'Packaging', short: 'Structure', accent: '#d7ff3a', blurb: 'Boxes, bottles and labels that beg to be picked up.' },
-    { key: 'package', index: '03', title: 'Package', short: 'Product', accent: '#7cc6ff', blurb: 'Complete product packages — from concept to shelf-ready.' },
+    { key: 'package', index: '03', title: 'DESIGNS', short: 'Designs', accent: '#7cc6ff', blurb: 'Complete product packages — from concept to shelf-ready.' },
     { key: 'video-editing', index: '04', title: 'Video Editing', short: 'Cut', accent: '#ff7ad9', blurb: 'Rhythm, story and pace — edits that keep eyes glued.' },
     { key: 'motion-graphics', index: '05', title: 'Motion Graphics', short: 'Motion', accent: '#ffd23f', blurb: 'Type, shape and logo animation with personality.' },
     { key: '3d-animation', index: '06', title: '3D Animation', short: 'Depth', accent: '#9b8cff', blurb: 'Products, scenes and characters rendered in depth.' },
