@@ -10,7 +10,8 @@ const year = new Date().getFullYear()
 
 export default function Contact() {
   const { site } = useSite()
-  const { contact, profile, footer } = site
+  const { contact, profile, footer, content } = site
+  const copy = content.contact
   const mailtoAll = `mailto:${contact.emails.join(',')}?subject=${encodeURIComponent(
     "Let's build something remarkable",
   )}`
@@ -30,16 +31,14 @@ export default function Contact() {
 
       <div className="container-x relative flex flex-1 flex-col items-center justify-center py-24 text-center sm:py-32">
         <Reveal>
-          <p className="eyebrow">Connect · 05</p>
+          <p className="eyebrow">{copy.eyebrow}</p>
         </Reveal>
         <h2 className="mt-5 font-display text-[clamp(4rem,14vw,12rem)] leading-[0.85]">
-          <SplitWords text="Let's" />
-          <SplitWords text="talk." className="text-ember" delay={0.08} />
+          <SplitWords text={copy.title} />
+          <SplitWords text={copy.titleAccent} className="text-ember" delay={0.08} />
         </h2>
         <Reveal delay={0.1}>
-          <p className="mx-auto mt-6 max-w-md text-[15px] leading-relaxed text-bone/55 sm:text-base">
-            Have a brand, a product or a story that needs a voice? Tell me about it.
-          </p>
+          <p className="mx-auto mt-6 max-w-md text-[15px] leading-relaxed text-bone/55 sm:text-base">{copy.lead}</p>
         </Reveal>
 
         <Reveal delay={0.18} className="mt-10">
@@ -47,10 +46,10 @@ export default function Contact() {
             href={mailtoAll}
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.97 }}
-            className="group relative inline-flex items-center gap-4 overflow-hidden rounded-full bg-ember py-3 pl-8 pr-3 text-ink sm:py-4 sm:pl-10"
+            className="group relative inline-flex items-center gap-4 overflow-hidden rounded-full bg-ember py-3 pl-8 pr-3 text-onaccent sm:py-4 sm:pl-10"
           >
             <span className="absolute inset-0 origin-left scale-x-0 bg-bone transition-transform duration-500 ease-out group-hover:scale-x-100" />
-            <span className="relative font-display text-2xl tracking-wide sm:text-3xl">Start a project</span>
+            <span className="relative font-display text-2xl tracking-wide sm:text-3xl">{copy.ctaLabel}</span>
             <span className="relative grid h-11 w-11 place-items-center rounded-full bg-ink text-bone transition-transform duration-500 group-hover:rotate-45 sm:h-12 sm:w-12">
               <ArrowUpRight size={20} />
             </span>
@@ -84,7 +83,7 @@ export default function Contact() {
               viewport={{ once: false }}
               transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.3 + i * 0.08 }}
               whileHover={{ y: -6, rotate: i % 2 ? 8 : -8 }}
-              className="grid h-14 w-14 place-items-center rounded-full border border-bone/15 text-bone transition-colors hover:border-ember hover:bg-ember hover:text-ink"
+              className="grid h-14 w-14 place-items-center rounded-full border border-bone/15 text-bone transition-colors hover:border-ember hover:bg-ember hover:text-onaccent"
             >
               <Icon size={22} />
             </motion.a>

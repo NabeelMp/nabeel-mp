@@ -34,6 +34,46 @@ export interface HeroInfo {
   name: string
   sub: string
   scrollLabel: string
+  /** Illustrated "character" portrait shown on the front of the About card. */
+  profileImage: string
+  /** The real photo revealed on the flip side of the About card. */
+  realImage: string
+}
+
+/** Editable section headings/copy so every part of the site can be reworded. */
+export interface ContentInfo {
+  about: {
+    eyebrow: string
+    titleLine1: string
+    titleLine2: string
+    hoverHint: string
+    flipHint: string
+    fallbackText: string
+  }
+  whatIDo: {
+    eyebrow: string
+    title: string
+    lead: string
+    processEyebrow: string
+  }
+  projects: {
+    eyebrow: string
+    title: string
+    titleAccent: string
+    lead: string
+  }
+  reviews: {
+    eyebrow: string
+    title: string
+    titleAccent: string
+  }
+  contact: {
+    eyebrow: string
+    title: string
+    titleAccent: string
+    lead: string
+    ctaLabel: string
+  }
 }
 
 export interface SiteContent {
@@ -41,6 +81,7 @@ export interface SiteContent {
   metaDescription: string
   footer: FooterInfo
   hero: HeroInfo
+  content: ContentInfo
   profile: {
     name: string
     short: string
@@ -74,6 +115,42 @@ export const defaultSite: SiteContent = {
     name: 'Muhammed Nabeel MP',
     sub: 'Designer · Storyteller',
     scrollLabel: 'Scroll',
+    profileImage: '/char/rig.webp',
+    realImage: '/me-original.jpg',
+  },
+  content: {
+    about: {
+      eyebrow: 'About · 01',
+      titleLine1: 'Muhammed',
+      titleLine2: 'Nabeel MP',
+      hoverHint: 'hover me',
+      flipHint: "that's me →",
+      fallbackText: 'THE REAL\nNABEEL',
+    },
+    whatIDo: {
+      eyebrow: 'Services · 02',
+      title: 'What I do',
+      lead: 'From a single logo to a full brand world — strategy, design, motion and 3D, crafted under one roof with one consistent voice.',
+      processEyebrow: 'How I work',
+    },
+    projects: {
+      eyebrow: 'Projects · 03',
+      title: 'Selected',
+      titleAccent: 'works.',
+      lead: 'Six disciplines, one obsession with detail. Pick a door — every work has its own story page.',
+    },
+    reviews: {
+      eyebrow: 'Kind words · 04',
+      title: 'What people',
+      titleAccent: 'say.',
+    },
+    contact: {
+      eyebrow: 'Connect · 05',
+      title: "Let's",
+      titleAccent: 'talk.',
+      lead: 'Have a brand, a product or a story that needs a voice? Tell me about it.',
+      ctaLabel: 'Start a project',
+    },
   },
   profile: {
     name: 'Muhammed Nabeel MP',

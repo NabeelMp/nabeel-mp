@@ -19,6 +19,7 @@ function Counter({ to, suffix }: { to: number; suffix: string }) {
 export default function About() {
   const { site } = useSite()
   const profile = site.profile
+  const about = site.content.about
   const ref = useRef<HTMLElement>(null)
   const [snap, setSnap] = useState(0)
   const [flipped, setFlipped] = useState(false)
@@ -49,20 +50,22 @@ export default function About() {
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,90,31,.22),transparent_60%)]" />
                 <div className="absolute inset-x-0 bottom-0 top-[6%] flex justify-center">
                   <div className="aspect-[731/1207] h-full">
-                    <Character idleMoves snapSignal={snap} className="h-full w-full" />
+                    <Character idleMoves snapSignal={snap} src={site.hero.profileImage || undefined} className="h-full w-full" />
                   </div>
                 </div>
-                <span className="chip absolute left-4 top-4 bg-ink/60 backdrop-blur">hover me</span>
-                <span className="absolute bottom-4 right-4 font-hand text-xl text-bone/60">that's me →</span>
+                <span className="chip absolute left-4 top-4 bg-ink/60 backdrop-blur">{about.hoverHint}</span>
+                <span className="absolute bottom-4 right-4 font-hand text-xl text-bone/60">{about.flipHint}</span>
               </div>
               <div className="card absolute inset-0 overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)]">
                 {photoOk ? (
-                  <img src="/me-original.jpg" alt={profile.name} className="h-full w-full object-cover object-top" onError={() => setPhotoOk(false)} />
+                  <img key={site.hero.realImage} src={site.hero.realImage} alt={profile.name} className="h-full w-full object-cover object-top" onError={() => setPhotoOk(false)} />
                 ) : (
                   <div className="grid h-full place-items-center bg-ash p-8 text-center font-display text-5xl text-bone/70">
-                    THE REAL
-                    <br />
-                    NABEEL
+                    {about.fallbackText.split('\n').map((line, i) => (
+                      <span key={i} className="block">
+                        {line}
+                      </span>
+                    ))}
                   </div>
                 )}
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/90 to-transparent p-5">
@@ -75,12 +78,12 @@ export default function About() {
 
         <div>
           <Reveal>
-            <p className="eyebrow">About · 01</p>
+            <p className="eyebrow">{about.eyebrow}</p>
           </Reveal>
           <h2 className="mt-4 font-display text-[clamp(3rem,7.5vw,7rem)] leading-[0.88]">
-            <SplitWords text="Muhammed" />
+            <SplitWords text={about.titleLine1} />
             <br />
-            <SplitWords text="Nabeel MP" className="text-ember" delay={0.1} />
+            <SplitWords text={about.titleLine2} className="text-ember" delay={0.1} />
           </h2>
           <Reveal delay={0.15} className="mt-5 flex flex-wrap gap-2">
             {profile.roles.map((r) => (

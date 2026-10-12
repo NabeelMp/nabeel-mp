@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Menu, X, Lock } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
+import ThemeToggle from './ThemeToggle'
 import { scrollToId } from '../lib/scroll'
 import { useSite } from '../lib/site'
 
@@ -83,16 +84,17 @@ export default function Nav({ alwaysVisible = false }: { alwaysVisible?: boolean
                 ))}
               </ul>
               <div className="hidden items-center gap-2 md:flex">
-                <Link to="/admin" aria-label="Admin" title="Admin" className="grid h-9 w-9 place-items-center rounded-full border border-bone/15 text-bone/60 transition-colors hover:border-ember hover:text-ember">
-                  <Lock size={14} />
-                </Link>
+                <ThemeToggle />
                 <button onClick={() => go('contact')} className="btn-ember !py-2 !text-[13px]">
                   Let's talk
                 </button>
               </div>
-              <button aria-label="Menu" onClick={() => setOpen(true)} className="grid h-10 w-10 place-items-center rounded-full bg-bone text-ink md:hidden">
-                <Menu size={18} />
-              </button>
+              <div className="flex items-center gap-2 md:hidden">
+                <ThemeToggle />
+                <button aria-label="Menu" onClick={() => setOpen(true)} className="grid h-10 w-10 place-items-center rounded-full bg-bone text-ink">
+                  <Menu size={18} />
+                </button>
+              </div>
             </nav>
           </motion.header>
         )}
@@ -119,9 +121,6 @@ export default function Nav({ alwaysVisible = false }: { alwaysVisible?: boolean
                 </motion.li>
               ))}
             </ul>
-            <Link to="/admin" onClick={() => setOpen(false)} className="mt-auto flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-bone/50 hover:text-ember">
-              <Lock size={14} /> Admin
-            </Link>
           </motion.div>
         )}
       </AnimatePresence>

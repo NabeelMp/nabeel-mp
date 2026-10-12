@@ -71,7 +71,7 @@ type Uniforms = {
   sway: MotionValue<number>
 }
 
-function PhotoRig({ u, className, style }: { u: Uniforms; className?: string; style?: React.CSSProperties }) {
+function PhotoRig({ u, className, style, src }: { u: Uniforms; className?: string; style?: React.CSSProperties; src: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [fallback, setFallback] = useState(false)
 
@@ -115,7 +115,7 @@ function PhotoRig({ u, className, style }: { u: Uniforms; className?: string; st
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
       ready = true
     }
-    img.src = IMG
+    img.src = src
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
@@ -149,9 +149,9 @@ function PhotoRig({ u, className, style }: { u: Uniforms; className?: string; st
       cancelAnimationFrame(raf)
       ro.disconnect()
     }
-  }, [u])
+  }, [u, src])
 
-  if (fallback) return <img src={IMG} alt="Muhammed Nabeel MP" className={`${className ?? ''} object-contain`} style={style} />
+  if (fallback) return <img src={src} alt="Muhammed Nabeel MP" className={`${className ?? ''} object-contain`} style={style} />
   return <canvas ref={canvasRef} role="img" aria-label="Muhammed Nabeel MP" className={className} style={style} />
 }
 
@@ -225,9 +225,10 @@ interface Props {
   idleMoves?: boolean
   className?: string
   onArrive?: () => void
+  src?: string
 }
 
-export default function Character({ enter = false, chair = false, snapSignal = 0, idleMoves = false, className, onArrive }: Props) {
+export default function Character({ enter = false, chair = false, snapSignal = 0, idleMoves = false, className, onArrive, src = IMG }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const pointer = usePointer()
   const [bubble, setBubble] = useState<string | null>(null)
@@ -421,7 +422,7 @@ export default function Character({ enter = false, chair = false, snapSignal = 0
       <motion.div ref={ref} onPointerEnter={onTickle} className="relative h-full w-full" style={{ rotate: tilt, y: hop, transformOrigin: '50% 100%' }}>
         <div className="pointer-events-none absolute -bottom-[1%] left-1/2 h-[6%] w-[90%] -translate-x-1/2 rounded-full bg-ember/35 blur-2xl" />
         {chair && <ChairBack />}
-        <PhotoRig u={uniforms} className="absolute left-0 top-0 w-full" style={{ height: photoH }} />
+        <PhotoRig u={uniforms} src={src} className="absolute left-0 top-0 w-full" style={{ height: photoH }} />
         {chair && <ChairFront wheel={wheel} />}
 
         <AnimatePresence>

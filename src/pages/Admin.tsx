@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import {
+  ArrowLeft,
   BarChart3,
   Boxes,
   Briefcase,
@@ -18,27 +20,31 @@ import {
   Sparkles,
   Star,
   Trash2,
+  Type,
   UserCog,
   Wrench,
+  X,
 } from 'lucide-react'
 import Stars from '../components/Stars'
+import ThemeToggle from '../components/ThemeToggle'
 import {
   CategoriesEditor,
   ContactEditor,
   GeneralEditor,
   HeroEditor,
   ProfileEditor,
+  SectionsEditor,
   ServicesEditor,
   SiteSettingsBar,
 } from '../components/admin/sections'
-import { EmptyState, Field, ImageInput, Section, TextArea, TextInput, Toast } from '../components/admin/ui'
+import { EmptyState, Field, ImageInput, PasswordInput, Section, TextArea, TextInput, Toast } from '../components/admin/ui'
 import { createWork, deleteReview, deleteWork, listReviews, listWorks, uniqueSlug, updateWork } from '../lib/api'
 import { changeCredentials, getDemoCredentials, resetDemoCredentials, signIn, signOut, useAdminSession } from '../lib/auth'
 import { isSupabaseReady } from '../lib/supabase'
 import { useSite } from '../lib/site'
 import type { CategoryKey, NewWork, Review, Work } from '../lib/types'
 
-type Tab = 'dashboard' | 'profile' | 'hero' | 'services' | 'disciplines' | 'contact' | 'works' | 'reviews' | 'general' | 'security'
+type Tab = 'dashboard' | 'profile' | 'hero' | 'sections' | 'services' | 'disciplines' | 'contact' | 'works' | 'reviews' | 'general' | 'security'
 
 const NAV: { group: string; items: { key: Tab; label: string; icon: typeof LayoutDashboard }[] }[] = [
   { group: 'Overview', items: [{ key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard }] },
@@ -46,7 +52,8 @@ const NAV: { group: string; items: { key: Tab; label: string; icon: typeof Layou
     group: 'Site content',
     items: [
       { key: 'profile', label: 'Profile & About', icon: UserCog },
-      { key: 'hero', label: 'Hero', icon: Sparkles },
+      { key: 'hero', label: 'Hero & Photos', icon: Sparkles },
+      { key: 'sections', label: 'Section Copy', icon: Type },
       { key: 'services', label: 'Services & Process', icon: Wrench },
       { key: 'disciplines', label: 'Disciplines', icon: Layers },
       { key: 'contact', label: 'Contact', icon: Briefcase },
@@ -70,6 +77,16 @@ function Login() {
   const [p, setP] = useState('')
   const [err, setErr] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [showChange, setShowChange] = useState(false)
+
+  // Change-password state (available straight from the login screen).
+  const [cpUser, setCpUser] = useState('')
+  const [cpCurrent, setCpCurrent] = useState('')
+  const [cpNext, setCpNext] = useState('')
+  const [cpConfirm, setCpConfirm] = useState('')
+  const [cpMsg, setCpMsg] = useState<{ tone: 'ok' | 'err'; text: string } | null>(null)
+  const [cpBusy, setCpBusy] = useState(false)
+
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     setBusy(true)
@@ -82,28 +99,85 @@ function Login() {
       setBusy(false)
     }
   }
+
+  const submitChange = async (e: FormEvent) => {
+    e.preventDefault()
+    setCpMsg(null)
+    if (!cpNext || cpNext !== cpConfirm) {
+      setCpMsg({ tone: 'err', text: 'New password and confirmation do not match' })
+      return
+    }
+    setCpBusy(true)
+    try {
+      await changeCredentials({ username: isSupabaseReady ? undefined : cpUser || undefined, password: cpNext, current: cpCurrent || undefined })
+      setCpCurrent('')
+      setCpNext('')
+      setCpConfirm('')
+      setCpMsg({ tone: 'ok', text: 'Password updated — sign in with your new credentials.' })
+    } catch (e) {
+      setCpMsg({ tone: 'err', text: e instanceof Error ? e.message : 'Could not update password' })
+    } finally {
+      setCpBusy(false)
+    }
+  }
+
   return (
     <div className="grid min-h-screen place-items-center bg-ink p-6">
-      <form onSubmit={submit} className="card grid w-full max-w-sm gap-4 p-8">
-        <div>
-          <p className="eyebrow">Restricted</p>
-          <h1 className="mt-2 font-display text-5xl">Admin</h1>
-        </div>
-        <input className="input" placeholder={isSupabaseReady ? 'Email' : 'Username'} value={u} onChange={(e) => setU(e.target.value)} autoComplete="username" required />
-        <input className="input" type="password" placeholder="Password" value={p} onChange={(e) => setP(e.target.value)} autoComplete="current-password" required />
-        {err && <p className="text-sm text-ember">{err}</p>}
-        <button className="btn-ember" disabled={busy}>
-          {busy ? 'Signing in…' : 'Sign in'}
-        </button>
-        {!isSupabaseReady && (
-          <p className="text-xs text-bone/40">
-            Demo mode — username <span className="text-bone">{getDemoCredentials().username}</span> · password <span className="text-bone">{getDemoCredentials().password}</span>
-          </p>
+      <div className="card grid w-full max-w-sm gap-4 p-8">
+        <form onSubmit={submit} className="grid gap-4">
+          <div>
+            <p className="eyebrow">Restricted</p>
+            <h1 className="mt-2 font-display text-5xl">Admin</h1>
+          </div>
+          <input className="input" placeholder={isSupabaseReady ? 'Email' : 'Username'} value={u} onChange={(e) => setU(e.target.value)} autoComplete="username" required />
+          <PasswordInput value={p} onChange={setP} placeholder="Password" autoComplete="current-password" />
+          {err && <p className="text-sm text-ember">{err}</p>}
+          <button className="btn-ember" disabled={busy}>
+            {busy ? 'Signing in…' : 'Sign in'}
+          </button>
+          {!isSupabaseReady && (
+            <button type="button" onClick={() => setShowChange((v) => !v)} className="text-xs text-bone/50 hover:text-ember">
+              {showChange ? '— Hide password options' : 'Change password'}
+            </button>
+          )}
+          {!isSupabaseReady && (
+            <p className="text-xs text-bone/40">
+              Demo mode — username <span className="text-bone">{getDemoCredentials().username}</span> · password <span className="text-bone">{getDemoCredentials().password}</span>
+            </p>
+          )}
+        </form>
+
+        {!isSupabaseReady && showChange && (
+          <motion.form
+            onSubmit={submitChange}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="grid gap-3 overflow-hidden border-t border-line/10 pt-4"
+          >
+            <p className="eyebrow">Change password</p>
+            <Field label="Username" hint="Leave blank to keep the current one.">
+              <TextInput value={cpUser} onChange={setCpUser} placeholder={getDemoCredentials().username} />
+            </Field>
+            <Field label="Current password">
+              <PasswordInput value={cpCurrent} onChange={setCpCurrent} autoComplete="current-password" />
+            </Field>
+            <Field label="New password">
+              <PasswordInput value={cpNext} onChange={setCpNext} autoComplete="new-password" />
+            </Field>
+            <Field label="Confirm new password">
+              <PasswordInput value={cpConfirm} onChange={setCpConfirm} autoComplete="new-password" />
+            </Field>
+            {cpMsg && <p className={`text-sm ${cpMsg.tone === 'ok' ? 'text-lime' : 'text-ember'}`}>{cpMsg.text}</p>}
+            <button className="btn-ghost w-fit" disabled={cpBusy}>
+              <KeyRound size={15} /> {cpBusy ? 'Updating…' : 'Update password'}
+            </button>
+          </motion.form>
         )}
+
         <Link to="/" className="text-center text-xs text-bone/40 hover:text-ember">
           ← Back to site
         </Link>
-      </form>
+      </div>
     </div>
   )
 }
@@ -185,7 +259,7 @@ function WorkEditor({ draft, setDraft, categories }: { draft: WorkDraft; setDraf
             <div className="flex-1">
               <ImageInput label={`Image ${i + 1}`} value={g} onChange={(v) => setGalleryAt(i, v)} />
             </div>
-            <button type="button" onClick={() => set('gallery', draft.gallery.filter((_, k) => k !== i))} className="mb-1 grid h-10 w-10 shrink-0 place-items-center rounded-full border border-bone/15 text-ember transition-colors hover:bg-ember hover:text-ink" aria-label="Remove image">
+            <button type="button" onClick={() => set('gallery', draft.gallery.filter((_, k) => k !== i))} className="mb-1 grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line/15 text-ember transition-colors hover:bg-ember hover:text-onaccent" aria-label="Remove image">
               <Trash2 size={14} />
             </button>
           </div>
@@ -299,7 +373,7 @@ function WorksTab({ onToast }: { onToast: (m: string) => void }) {
             </div>
             <ul className="grid gap-3">
               {shown.map((w) => (
-                <li key={w.id} className="flex items-center gap-4 rounded-2xl border border-bone/10 bg-ash/40 p-3">
+                <li key={w.id} className="flex items-center gap-4 rounded-2xl border border-line/10 bg-ash/40 p-3">
                   <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-ash">{w.cover_url && <img src={w.cover_url} alt="" className="h-full w-full object-cover" />}</div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold">{w.title}</p>
@@ -310,10 +384,10 @@ function WorksTab({ onToast }: { onToast: (m: string) => void }) {
                   <button onClick={() => startEdit(w)} className="btn-ghost !px-4 !py-2 !text-xs">
                     Edit
                   </button>
-                  <Link to={`/projects/${w.category}/${w.slug}`} className="grid h-9 w-9 place-items-center rounded-full border border-bone/15 hover:border-bone" aria-label="Open">
+                  <Link to={`/projects/${w.category}/${w.slug}`} className="grid h-9 w-9 place-items-center rounded-full border border-line/15 hover:border-bone" aria-label="Open">
                     <ExternalLink size={14} />
                   </Link>
-                  <button onClick={() => remove(w)} className="grid h-9 w-9 place-items-center rounded-full border border-bone/15 text-ember transition-colors hover:bg-ember hover:text-ink" aria-label="Delete">
+                  <button onClick={() => remove(w)} className="grid h-9 w-9 place-items-center rounded-full border border-line/15 text-ember transition-colors hover:bg-ember hover:text-onaccent" aria-label="Delete">
                     <Trash2 size={14} />
                   </button>
                 </li>
@@ -328,7 +402,7 @@ function WorksTab({ onToast }: { onToast: (m: string) => void }) {
         ) : (
           <form onSubmit={submit} className="grid gap-5">
             <WorkEditor draft={draft} setDraft={setDraft} categories={site.categories} />
-            <div className="flex items-center justify-between gap-3 border-t border-bone/10 pt-4">
+            <div className="flex items-center justify-between gap-3 border-t border-line/10 pt-4">
               <span className="text-xs text-bone/50">{status}</span>
               <button className="btn-ember" disabled={busy}>
                 <Save size={15} /> {busy ? 'Saving…' : mode === 'edit' ? 'Save changes' : 'Publish'}
@@ -358,11 +432,11 @@ function ReviewsTab({ onToast }: { onToast: (m: string) => void }) {
     onToast('Review deleted')
   }
   return (
-    <Section title="Reviews" hint={`${reviews.length} total · only 5-star reviews appear on the home page.`}>
+    <Section title="Reviews" hint={`${reviews.length} total · star ratings are shown, only the best appear on the home page.`}>
       {reviews.length === 0 && <EmptyState>No reviews yet.</EmptyState>}
       <ul className="grid gap-3 md:grid-cols-2">
         {reviews.map((r) => (
-          <li key={r.id} className="grid gap-2 rounded-2xl border border-bone/10 bg-ash/40 p-5">
+          <li key={r.id} className="grid gap-2 rounded-2xl border border-line/10 bg-ash/40 p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="font-semibold">{r.name}</p>
@@ -370,7 +444,7 @@ function ReviewsTab({ onToast }: { onToast: (m: string) => void }) {
               </div>
               <div className="flex items-center gap-3">
                 <Stars value={r.rating} size={13} />
-                <button onClick={() => remove(r)} className="grid h-8 w-8 place-items-center rounded-full border border-bone/15 text-ember transition-colors hover:bg-ember hover:text-ink" aria-label="Delete review">
+                <button onClick={() => remove(r)} className="grid h-8 w-8 place-items-center rounded-full border border-line/15 text-ember transition-colors hover:bg-ember hover:text-onaccent" aria-label="Delete review">
                   <Trash2 size={13} />
                 </button>
               </div>
@@ -427,14 +501,14 @@ function SecurityTab({ onToast }: { onToast: (m: string) => void }) {
           )}
           {!isSupabaseReady && (
             <Field label="Current password" hint="Required to confirm changes.">
-              <TextInput type="password" value={current} onChange={setCurrent} />
+              <PasswordInput value={current} onChange={setCurrent} autoComplete="current-password" />
             </Field>
           )}
           <Field label="New password">
-            <TextInput type="password" value={next} onChange={setNext} />
+            <PasswordInput value={next} onChange={setNext} autoComplete="new-password" />
           </Field>
           <Field label="Confirm new password">
-            <TextInput type="password" value={confirmPw} onChange={setConfirmPw} />
+            <PasswordInput value={confirmPw} onChange={setConfirmPw} autoComplete="new-password" />
           </Field>
           {err && <p className="text-sm text-ember">{err}</p>}
           <button className="btn-ember w-fit" disabled={busy}>
@@ -537,7 +611,7 @@ function Dashboard({ go }: { go: (t: Tab) => void }) {
               { label: 'Footer & SEO', tab: 'general' as Tab, icon: Settings2 },
               { label: 'Change credentials', tab: 'security' as Tab, icon: ShieldCheck },
             ].map((a) => (
-              <button key={a.tab} onClick={() => go(a.tab)} className="flex items-center gap-3 rounded-2xl border border-bone/10 bg-ash/40 px-4 py-3 text-left text-sm text-bone/80 transition-colors hover:border-ember/40 hover:text-bone">
+              <button key={a.tab} onClick={() => go(a.tab)} className="flex items-center gap-3 rounded-2xl border border-line/10 bg-ash/40 px-4 py-3 text-left text-sm text-bone/80 transition-colors hover:border-ember/40 hover:text-bone">
                 <a.icon size={16} className="text-ember" /> {a.label}
               </button>
             ))}
@@ -575,35 +649,37 @@ export default function Admin() {
       <Login />
     )
 
+  const activeItem = NAV.flatMap((g) => g.items).find((i) => i.key === tab)
+
   return (
     <div className="min-h-screen bg-ink text-bone">
       {/* Top bar */}
-      <header className="sticky top-0 z-40 border-b border-bone/10 bg-ink/85 backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-[1500px] items-center justify-between gap-3 px-5 py-3 sm:px-8">
-          <div className="flex items-center gap-3">
-            <button onClick={() => setNavOpen((o) => !o)} className="grid h-9 w-9 place-items-center rounded-full border border-bone/15 lg:hidden" aria-label="Menu">
-              <LayoutDashboard size={16} />
+      <header className="sticky top-0 z-40 border-b border-line/10 bg-ink/85 backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-3 sm:px-8">
+          <div className="flex min-w-0 items-center gap-3">
+            <button onClick={() => setNavOpen((o) => !o)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line/15 lg:hidden" aria-label="Toggle menu">
+              {navOpen ? <X size={16} /> : <LayoutDashboard size={16} />}
             </button>
-            <span className="h-2 w-2 rounded-full bg-ember" />
-            <span className="text-[11px] font-bold tracking-[0.4em]">NABEEL · ADMIN</span>
-            {!isSupabaseReady && <span className="chip !text-[9px] text-ember">demo mode</span>}
+            <Link to="/" className="flex items-center gap-2" title="Back to portfolio">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-ember" />
+              <span className="text-[11px] font-bold tracking-[0.4em]">NABEEL · ADMIN</span>
+            </Link>
+            {!isSupabaseReady && <span className="chip hidden !text-[9px] text-ember sm:inline-flex">demo mode</span>}
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <SiteSettingsBar onToast={setToast} />
-            <Link to="/" className="btn-ghost !px-4 !py-2 !text-xs">
-              <ExternalLink size={14} /> <span className="hidden sm:inline">View site</span>
+            <Link to="/" className="btn-ghost !px-4 !py-2 !text-xs" title="Back to portfolio">
+              <ArrowLeft size={14} /> <span className="hidden sm:inline">Exit</span>
             </Link>
-            <button onClick={signOut} className="btn-ghost !px-4 !py-2 !text-xs">
-              <LogOut size={14} /> <span className="hidden sm:inline">Sign out</span>
-            </button>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto grid w-full max-w-[1500px] gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[240px_minmax(0,1fr)]">
+      <div className="mx-auto grid w-full max-w-[1500px] gap-8 px-4 py-6 sm:px-8 sm:py-8 lg:grid-cols-[248px_minmax(0,1fr)]">
         {/* Sidebar */}
         <aside className={`${navOpen ? 'block' : 'hidden'} lg:block`}>
-          <nav className="lg:sticky lg:top-24 grid gap-6">
+          <nav className="grid gap-6 lg:sticky lg:top-24">
             {NAV.map((group) => (
               <div key={group.group} className="grid gap-1.5">
                 <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-bone/35">{group.group}</p>
@@ -627,16 +703,29 @@ export default function Admin() {
 
         {/* Panel */}
         <main className="min-w-0">
-          {tab === 'dashboard' && <Dashboard go={go} />}
-          {tab === 'profile' && <div className="grid gap-6"><ProfileEditor /></div>}
-          {tab === 'hero' && <HeroEditor />}
-          {tab === 'services' && <div className="grid gap-6"><ServicesEditor /></div>}
-          {tab === 'disciplines' && <CategoriesEditor />}
-          {tab === 'contact' && <ContactEditor />}
-          {tab === 'general' && <GeneralEditor />}
-          {tab === 'works' && <WorksTab onToast={setToast} />}
-          {tab === 'reviews' && <ReviewsTab onToast={setToast} />}
-          {tab === 'security' && <SecurityTab onToast={setToast} />}
+          {activeItem && (
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-3 border-b border-line/10 pb-5">
+              <div>
+                <p className="eyebrow">{NAV.find((g) => g.items.some((i) => i.key === tab))?.group}</p>
+                <h1 className="mt-1 font-display text-4xl leading-none sm:text-5xl">{activeItem.label}</h1>
+              </div>
+              <p className="text-xs text-bone/40">Changes save to this browser instantly.</p>
+            </div>
+          )}
+
+          <div className="grid gap-6">
+            {tab === 'dashboard' && <Dashboard go={go} />}
+            {tab === 'profile' && <ProfileEditor />}
+            {tab === 'hero' && <HeroEditor />}
+            {tab === 'sections' && <SectionsEditor />}
+            {tab === 'services' && <ServicesEditor />}
+            {tab === 'disciplines' && <CategoriesEditor />}
+            {tab === 'contact' && <ContactEditor />}
+            {tab === 'general' && <GeneralEditor />}
+            {tab === 'works' && <WorksTab onToast={setToast} />}
+            {tab === 'reviews' && <ReviewsTab onToast={setToast} />}
+            {tab === 'security' && <SecurityTab onToast={setToast} />}
+          </div>
         </main>
       </div>
 

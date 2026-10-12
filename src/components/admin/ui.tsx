@@ -1,12 +1,12 @@
 import { useEffect, useId, useState, type ChangeEvent, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
-import { ImagePlus, Plus, Trash2, X } from 'lucide-react'
+import { Eye, EyeOff, ImagePlus, Plus, Trash2, X } from 'lucide-react'
 import { uploadMedia } from '../../lib/api'
 
 export function Section({ title, hint, children, aside }: { title: string; hint?: string; children: ReactNode; aside?: ReactNode }) {
   return (
     <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="card overflow-hidden">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-bone/10 px-6 py-5">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line/10 px-6 py-5">
         <div>
           <h2 className="font-display text-2xl leading-none">{title}</h2>
           {hint && <p className="mt-1 text-xs text-bone/45">{hint}</p>}
@@ -32,6 +32,31 @@ export function TextInput({ value, onChange, placeholder, type = 'text', require
   return <input className="input" type={type} value={value} placeholder={placeholder} required={required} onChange={(e) => onChange(e.target.value)} />
 }
 
+/** Password field with a show/hide toggle. */
+export function PasswordInput({ value, onChange, placeholder, autoComplete }: { value: string; onChange: (v: string) => void; placeholder?: string; autoComplete?: string }) {
+  const [show, setShow] = useState(false)
+  return (
+    <div className="relative">
+      <input
+        className="input pr-11"
+        type={show ? 'text' : 'password'}
+        value={value}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        aria-label={show ? 'Hide password' : 'Show password'}
+        className="absolute right-3 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-bone/40 transition-colors hover:text-bone"
+      >
+        {show ? <EyeOff size={15} /> : <Eye size={15} />}
+      </button>
+    </div>
+  )
+}
+
 export function TextArea({ value, onChange, placeholder, rows = 4 }: { value: string; onChange: (v: string) => void; placeholder?: string; rows?: number }) {
   return <textarea className="input resize-y" rows={rows} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
 }
@@ -53,7 +78,7 @@ export function NumberInput({ value, onChange, min, max, step = 1 }: { value: nu
 export function ColorInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const id = useId()
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-bone/10 bg-ash px-3 py-2">
+    <div className="flex items-center gap-3 rounded-2xl border border-line/10 bg-ash px-3 py-2">
       <input id={id} type="color" value={value} onChange={(e) => onChange(e.target.value)} className="h-8 w-10 cursor-pointer rounded-lg border-0 bg-transparent p-0" />
       <input value={value} onChange={(e) => onChange(e.target.value)} className="w-full bg-transparent font-mono text-xs uppercase text-bone outline-none" />
     </div>
@@ -62,7 +87,7 @@ export function ColorInput({ value, onChange }: { value: string; onChange: (v: s
 
 export function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
   return (
-    <button type="button" role="switch" aria-checked={checked} aria-label={label} onClick={() => onChange(!checked)} className={`relative h-7 w-12 shrink-0 rounded-full border transition-colors ${checked ? 'border-ember bg-ember' : 'border-bone/20 bg-ash'}`}>
+    <button type="button" role="switch" aria-checked={checked} aria-label={label} onClick={() => onChange(!checked)} className={`relative h-7 w-12 shrink-0 rounded-full border transition-colors ${checked ? 'border-ember bg-ember' : 'border-line/20 bg-ash'}`}>
       <motion.span layout className={`absolute top-0.5 h-5 w-5 rounded-full bg-bone ${checked ? 'right-0.5' : 'left-0.5'}`} transition={{ type: 'spring', stiffness: 500, damping: 32 }} />
     </button>
   )
@@ -77,7 +102,7 @@ export function StringListEditor({ items, onChange, placeholder, addLabel = 'Add
       {items.map((it, i) => (
         <div key={i} className="flex items-center gap-2">
           <input className="input" value={it} placeholder={placeholder} onChange={(e) => setAt(i, e.target.value)} />
-          <button type="button" onClick={() => remove(i)} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-bone/15 text-ember transition-colors hover:bg-ember hover:text-ink" aria-label="Remove">
+          <button type="button" onClick={() => remove(i)} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line/15 text-ember transition-colors hover:bg-ember hover:text-onaccent" aria-label="Remove">
             <X size={15} />
           </button>
         </div>
@@ -110,10 +135,10 @@ export function RecordListEditor<T extends Record<string, string>>({
   return (
     <div className="grid gap-3">
       {items.map((row, i) => (
-        <div key={i} className="rounded-2xl border border-bone/10 bg-ash/50 p-3">
+        <div key={i} className="rounded-2xl border border-line/10 bg-ash/50 p-3">
           <div className="mb-2 flex items-center justify-between gap-2">
             <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-bone/40">{title ? title(row, i) : `Row ${i + 1}`}</span>
-            <button type="button" onClick={() => remove(i)} className="grid h-8 w-8 place-items-center rounded-full border border-bone/15 text-ember transition-colors hover:bg-ember hover:text-ink" aria-label="Remove row">
+            <button type="button" onClick={() => remove(i)} className="grid h-8 w-8 place-items-center rounded-full border border-line/15 text-ember transition-colors hover:bg-ember hover:text-onaccent" aria-label="Remove row">
               <Trash2 size={13} />
             </button>
           </div>
@@ -159,7 +184,7 @@ export function ImageInput({ value, onChange, label }: { value: string; onChange
     <div className="grid gap-2">
       <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-bone/50">{label}</span>
       <div className="flex items-center gap-3">
-        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-bone/10 bg-ash">
+        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-line/10 bg-ash">
           {value ? <img src={value} alt="" className="h-full w-full object-cover" /> : null}
         </div>
         <div className="grid gap-1">
@@ -181,7 +206,7 @@ export function ImageInput({ value, onChange, label }: { value: string; onChange
 }
 
 export function EmptyState({ children }: { children: ReactNode }) {
-  return <p className="rounded-2xl border border-dashed border-bone/15 p-8 text-center text-sm text-bone/45">{children}</p>
+  return <p className="rounded-2xl border border-dashed border-line/15 p-8 text-center text-sm text-bone/45">{children}</p>
 }
 
 /** Small transient toast for save confirmations. */
