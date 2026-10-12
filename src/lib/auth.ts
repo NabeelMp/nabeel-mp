@@ -6,9 +6,26 @@ const DEMO_CREDS_KEY = 'nabeel.demoCreds'
 
 export const DEFAULT_DEMO_CREDENTIALS = { username: 'admin', password: 'admin' }
 
+/**
+ * Auto-lock delay for the admin panel. The session is dropped after this much
+ * inactivity, and whenever the admin tab is closed/hidden.
+ */
+export const ADMIN_AUTO_LOCK_MS = 5 * 60 * 1000
+
 export interface Credentials {
   username: string
   password: string
+}
+
+/* Demo-mode session lives in sessionStorage, so it is cleared automatically
+ * when the browser session ends (tab/window closed). A tiny listener set keeps
+ * the UI in sync without a full page reload. */
+const demoListeners = new Set<() => void>()
+const emitDemo = () => demoListeners.forEach((fn) => fn())
+
+function readDemoSession(): { loading: boolean; isAdmin: boolean; email: string | null } {
+  const isAdmin = sessionStorage.getItem(DEMO_SESSION_KEY) === '1'
+  return { loading: false, isAdmin, email: isAdmin ? getDemoCredentials().username : null }
 }
 
 /** Demo credentials, overridable by the admin from the Security tab. */
@@ -34,9 +51,12 @@ export function useAdminSession() {
 
   useEffect(() => {
     if (!supabase) {
-      const isAdmin = sessionStorage.getItem(DEMO_SESSION_KEY) === '1'
-      setState({ loading: false, isAdmin, email: isAdmin ? getDemoCredentials().username : null })
-      return
+      const sync = () => setState(readDemoSession())
+      sync()
+      demoListeners.add(sync)
+      return () => {
+        demoListeners.delete(sync)
+      }
     }
     const client = supabase
     const check = async () => {
@@ -64,7 +84,7 @@ export async function signIn(username: string, password: string) {
     const isCustom = u === creds.username && password === creds.password
     if (isDefault || isCustom) {
       sessionStorage.setItem(DEMO_SESSION_KEY, '1')
-      window.location.reload()
+      emitDemo()
       return
     }
     throw new Error('Invalid username or password')
@@ -74,9 +94,42 @@ export async function signIn(username: string, password: string) {
 }
 
 export async function signOut() {
-  sessionStorage.removeItem(DEMO_SESSION_KEY)
-  if (supabase) await supabase.auth.signOut()
-  window.location.reload()
+  if (!supabase) {
+    sessionStorage.removeItem(DEMO_SESSION_KEY)
+    emitDemo()
+    return
+  }
+  await supabase.auth.signOut()
+}
+
+/**
+ * Locks (signs out of) the admin panel automatically:
+ *  - after `ADMIN_AUTO_LOCK_MS` of inactivity, and
+ *  - as soon as the admin tab/page is hidden or the window is closed.
+ */
+export function useAutoLock(isAdmin: boolean) {
+  useEffect(() => {
+    if (!isAdmin) return
+    let timer = window.setTimeout(() => void signOut(), ADMIN_AUTO_LOCK_MS)
+    const reset = () => {
+      window.clearTimeout(timer)
+      timer = window.setTimeout(() => void signOut(), ADMIN_AUTO_LOCK_MS)
+    }
+    const hide = () => {
+      if (document.visibilityState === 'hidden') void signOut()
+    }
+    const bye = () => void signOut()
+    const events: (keyof WindowEventMap)[] = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'wheel', 'scroll']
+    events.forEach((e) => window.addEventListener(e, reset, { passive: true }))
+    document.addEventListener('visibilitychange', hide)
+    window.addEventListener('pagehide', bye)
+    return () => {
+      window.clearTimeout(timer)
+      events.forEach((e) => window.removeEventListener(e, reset))
+      document.removeEventListener('visibilitychange', hide)
+      window.removeEventListener('pagehide', bye)
+    }
+  }, [isAdmin])
 }
 
 /**

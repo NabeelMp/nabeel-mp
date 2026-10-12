@@ -39,7 +39,7 @@ import {
 } from '../components/admin/sections'
 import { EmptyState, Field, ImageInput, PasswordInput, Section, TextArea, TextInput, Toast } from '../components/admin/ui'
 import { createWork, deleteReview, deleteWork, listReviews, listWorks, uniqueSlug, updateWork } from '../lib/api'
-import { changeCredentials, DEFAULT_DEMO_CREDENTIALS, getDemoCredentials, resetDemoCredentials, signIn, signOut, useAdminSession } from '../lib/auth'
+import { changeCredentials, DEFAULT_DEMO_CREDENTIALS, getDemoCredentials, resetDemoCredentials, signIn, signOut, useAdminSession, useAutoLock } from '../lib/auth'
 import { isSupabaseReady } from '../lib/supabase'
 import { useSite } from '../lib/site'
 import type { CategoryKey, NewWork, Review, Work } from '../lib/types'
@@ -528,7 +528,6 @@ function SecurityTab({ onToast }: { onToast: (m: string) => void }) {
                 if (confirm('Restore the default demo login (admin / admin)?')) {
                   resetDemoCredentials()
                   onToast('Demo login restored')
-                  window.location.reload()
                 }
               }}
               className="btn-ghost w-fit"
@@ -629,6 +628,7 @@ export default function Admin() {
   const [tab, setTab] = useState<Tab>('dashboard')
   const [toast, setToast] = useState<string | null>(null)
   const [navOpen, setNavOpen] = useState(false)
+  useAutoLock(session.isAdmin)
   const go = (t: Tab) => {
     setTab(t)
     setNavOpen(false)
