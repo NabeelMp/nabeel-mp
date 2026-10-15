@@ -1,29 +1,29 @@
 import { motion } from 'framer-motion'
 import { Box, Clapperboard, Layers, Package, PenTool, Sparkles, type LucideIcon } from 'lucide-react'
-import { process, services } from '../lib/data'
+import { useSite } from '../lib/site'
 import { Reveal, SplitWords } from './Reveal'
 
 const ICONS: LucideIcon[] = [Sparkles, PenTool, Layers, Package, Clapperboard, Box]
 const ease = [0.16, 1, 0.3, 1] as const
 
 export default function WhatIDo() {
+  const { site } = useSite()
+  const { services, process, content } = site
+  const c = content.whatIDo
   return (
     <section id="what-i-do" className="relative bg-bone py-24 text-ink sm:py-32">
       <div className="container-x">
         <div className="grid items-end gap-8 border-b border-ink/10 pb-12 md:grid-cols-2 md:gap-16">
           <div>
             <Reveal>
-              <p className="eyebrow !text-ink/50">Services · 02</p>
+              <p className="eyebrow !text-ink/50">{c.eyebrow}</p>
             </Reveal>
             <h2 className="h-section mt-4">
-              <SplitWords text="What I do" />
+              <SplitWords text={c.title} />
             </h2>
           </div>
           <Reveal delay={0.1}>
-            <p className="max-w-md text-base leading-relaxed text-ink/60 md:ml-auto md:text-lg">
-              From a single logo to a full brand world — strategy, design, motion and 3D, crafted under one roof with one
-              consistent voice.
-            </p>
+            <p className="max-w-md text-base leading-relaxed text-ink/60 md:ml-auto md:text-lg">{c.lead}</p>
           </Reveal>
         </div>
 
@@ -45,7 +45,7 @@ export default function WhatIDo() {
                     <span className="text-xs font-semibold tracking-[0.2em] text-ink/40 transition-colors group-hover:text-bone/50">
                       {String(i + 1).padStart(2, '0')}
                     </span>
-                    <span className="grid h-11 w-11 place-items-center rounded-full border border-ink/15 transition-all duration-500 group-hover:rotate-[-12deg] group-hover:border-ember group-hover:bg-ember group-hover:text-ink">
+                    <span className="grid h-11 w-11 place-items-center rounded-full border border-ink/15 transition-all duration-500 group-hover:rotate-[-12deg] group-hover:border-ember group-hover:bg-ember group-hover:text-onaccent">
                       <Icon size={18} strokeWidth={1.75} />
                     </span>
                   </div>
@@ -59,7 +59,7 @@ export default function WhatIDo() {
 
         <div className="mt-16 sm:mt-20">
           <Reveal>
-            <p className="eyebrow mb-8 text-center !text-ink/50">How I work</p>
+            <p className="eyebrow mb-8 text-center !text-ink/50">{c.processEyebrow}</p>
           </Reveal>
           <ol className="relative grid grid-cols-3 gap-y-8 md:grid-cols-6">
             <span className="absolute left-[8%] right-[8%] top-[11px] hidden h-px bg-ink/15 md:block" />

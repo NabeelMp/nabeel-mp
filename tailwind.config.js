@@ -10,10 +10,14 @@ export default {
         hand: ['Caveat', 'cursive'],
       },
       colors: {
-        ink: '#070707',
-        coal: '#111111',
-        ash: '#1b1b1b',
-        bone: '#f2efe9',
+        // Palette driven by CSS variables (see src/index.css) so it can flip
+        // between the dark and light themes at runtime.
+        ink: 'rgb(var(--c-ink) / <alpha-value>)',
+        coal: 'rgb(var(--c-coal) / <alpha-value>)',
+        ash: 'rgb(var(--c-ash) / <alpha-value>)',
+        bone: 'rgb(var(--c-bone) / <alpha-value>)',
+        line: 'rgb(var(--c-line) / <alpha-value>)',
+        onaccent: 'rgb(var(--c-onaccent) / <alpha-value>)',
         ember: '#ff5a1f',
         lime: '#d7ff3a',
       },

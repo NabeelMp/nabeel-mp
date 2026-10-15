@@ -13,6 +13,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Caveat:wght@500;700&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body class="bg-ink text-bone">
+    <script>
+      // Apply the saved theme before first paint to avoid a flash of the wrong palette.
+      try {
+        var t = localStorage.getItem('nabeel.theme');
+        var light = t === 'light';
+        document.documentElement.classList.add(light ? 'light' : 'dark');
+        document.documentElement.style.colorScheme = light ? 'light' : 'dark';
+      } catch (e) {}
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -2,11 +2,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import Character from './Character'
 import { useSnapScroll } from '../hooks/useSnapScroll'
-import { profile } from '../lib/data'
-
-const WORD = 'PORTFOLIO'.split('')
+import { useSite } from '../lib/site'
 
 export default function Hero() {
+  const { site } = useSite()
+  const WORD = (site.hero.word || 'PORTFOLIO').split('')
   const ref = useRef<HTMLElement>(null)
   const [stage, setStage] = useState<'intro' | 'character'>('intro')
   const [arrived, setArrived] = useState(false)
@@ -57,7 +57,7 @@ export default function Hero() {
         transition={{ delay: 1.6 }}
       >
         <span className="h-2 w-2 animate-pulse rounded-full bg-ember" />
-        <span className="text-[11px] font-bold tracking-[0.4em]">NABEEL</span>
+        <span className="text-[11px] font-bold tracking-[0.4em]">{site.hero.eyebrow}</span>
       </motion.div>
       <motion.div
         className="absolute right-5 top-6 hidden text-right text-[10px] font-semibold uppercase tracking-[0.3em] text-bone/50 sm:right-10 sm:top-8 sm:block"
@@ -65,14 +65,14 @@ export default function Hero() {
         animate={{ opacity: 1 }}
         transition={{ delay: 1.8 }}
       >
-        {profile.roles.join(' · ')}
+        {site.profile.roles.join(' · ')}
         <br />© {new Date().getFullYear()}
       </motion.div>
 
       {stage === 'character' && (
         <div className="absolute inset-x-0 bottom-3 flex justify-center sm:bottom-5">
           <div className="aspect-[731/1537] h-[min(68svh,800px)] sm:h-[min(80svh,800px)] max-w-[94vw]">
-            <Character enter chair snapSignal={snap} onArrive={() => setArrived(true)} className="h-full w-full" />
+            <Character enter chair snapSignal={snap} onArrive={() => setArrived(true)} src={site.hero.profileImage || undefined} className="h-full w-full" />
           </div>
         </div>
       )}
@@ -83,8 +83,8 @@ export default function Hero() {
         animate={arrived ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8 }}
       >
-        <p className="font-display text-2xl leading-none sm:text-4xl">{profile.name}</p>
-        <p className="mt-1 text-[10px] uppercase tracking-[0.3em] text-bone/50 sm:text-[11px]">Designer · Storyteller</p>
+        <p className="font-display text-2xl leading-none sm:text-4xl">{site.hero.name}</p>
+        <p className="mt-1 text-[10px] uppercase tracking-[0.3em] text-bone/50 sm:text-[11px]">{site.hero.sub}</p>
       </motion.div>
       <motion.div
         className="absolute bottom-6 right-5 flex flex-col items-center gap-2 sm:bottom-10 sm:right-10"
@@ -92,7 +92,7 @@ export default function Hero() {
         animate={arrived ? { opacity: 1 } : {}}
         transition={{ delay: 0.6 }}
       >
-        <span className="text-[10px] uppercase tracking-[0.3em] text-bone/50">Scroll</span>
+        <span className="text-[10px] uppercase tracking-[0.3em] text-bone/50">{site.hero.scrollLabel}</span>
         <span className="relative h-10 w-[2px] overflow-hidden rounded-full bg-bone/15">
           <motion.span
             className="absolute inset-x-0 top-0 h-1/2 rounded-full bg-ember"

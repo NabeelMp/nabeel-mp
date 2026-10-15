@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
-import { categories } from '../lib/data'
+import { useSite } from '../lib/site'
 import { listWorks } from '../lib/api'
 import type { Category, Work } from '../lib/types'
 import { Reveal, SplitWords } from './Reveal'
@@ -98,6 +98,8 @@ function Tile({ c, works, i }: { c: Category; works: Work[]; i: number }) {
 }
 
 export default function Projects() {
+  const { site } = useSite()
+  const copy = site.content.projects
   const [works, setWorks] = useState<Work[]>([])
   useEffect(() => {
     listWorks().then(setWorks).catch(console.error)
@@ -109,23 +111,21 @@ export default function Projects() {
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div>
             <Reveal>
-              <p className="eyebrow">Projects · 03</p>
+              <p className="eyebrow">{copy.eyebrow}</p>
             </Reveal>
             <h2 className="h-section mt-4">
-              <SplitWords text="Selected" />
+              <SplitWords text={copy.title} />
               <br />
-              <SplitWords text="works." className="text-ember" delay={0.1} />
+              <SplitWords text={copy.titleAccent} className="text-ember" delay={0.1} />
             </h2>
           </div>
           <Reveal delay={0.2}>
-            <p className="max-w-sm text-[15px] text-bone/55">
-              Six disciplines, one obsession with detail. Pick a door — every work has its own story page.
-            </p>
+            <p className="max-w-sm text-[15px] text-bone/55">{copy.lead}</p>
           </Reveal>
         </div>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((c, i) => (
+          {site.categories.map((c, i) => (
             <Tile key={c.key} c={c} i={i} works={works.filter((w) => w.category === c.key)} />
           ))}
         </div>

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Menu, X, Lock } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
+import ThemeToggle from './ThemeToggle'
 import { scrollToId } from '../lib/scroll'
+import { useSite } from '../lib/site'
 
 const LINKS = [
   { id: 'home', label: 'Home' },
@@ -19,6 +21,7 @@ export default function Nav({ alwaysVisible = false }: { alwaysVisible?: boolean
   const [open, setOpen] = useState(false)
   const { pathname } = useLocation()
   const navigate = useNavigate()
+  const { site } = useSite()
 
   useEffect(() => {
     if (alwaysVisible) return
@@ -61,7 +64,7 @@ export default function Nav({ alwaysVisible = false }: { alwaysVisible?: boolean
             <nav className="mx-auto flex w-[min(94vw,980px)] items-center justify-between rounded-full border border-bone/10 bg-ink/70 py-2 pl-5 pr-2 backdrop-blur-xl">
               <Link to="/" onClick={() => go('home')} className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-ember" />
-                <span className="text-[11px] font-bold tracking-[0.4em]">NABEEL</span>
+                <span className="text-[11px] font-bold tracking-[0.4em]">{site.profile.short.toUpperCase()}</span>
               </Link>
               <ul className="hidden items-center gap-1 md:flex">
                 {LINKS.map((l) => (
@@ -81,16 +84,17 @@ export default function Nav({ alwaysVisible = false }: { alwaysVisible?: boolean
                 ))}
               </ul>
               <div className="hidden items-center gap-2 md:flex">
-                <Link to="/admin" aria-label="Admin" title="Admin" className="grid h-9 w-9 place-items-center rounded-full border border-bone/15 text-bone/60 transition-colors hover:border-ember hover:text-ember">
-                  <Lock size={14} />
-                </Link>
+                <ThemeToggle />
                 <button onClick={() => go('contact')} className="btn-ember !py-2 !text-[13px]">
                   Let's talk
                 </button>
               </div>
-              <button aria-label="Menu" onClick={() => setOpen(true)} className="grid h-10 w-10 place-items-center rounded-full bg-bone text-ink md:hidden">
-                <Menu size={18} />
-              </button>
+              <div className="flex items-center gap-2 md:hidden">
+                <ThemeToggle />
+                <button aria-label="Menu" onClick={() => setOpen(true)} className="grid h-10 w-10 place-items-center rounded-full bg-bone text-ink">
+                  <Menu size={18} />
+                </button>
+              </div>
             </nav>
           </motion.header>
         )}
@@ -117,9 +121,6 @@ export default function Nav({ alwaysVisible = false }: { alwaysVisible?: boolean
                 </motion.li>
               ))}
             </ul>
-            <Link to="/admin" onClick={() => setOpen(false)} className="mt-auto flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-bone/50 hover:text-ember">
-              <Lock size={14} /> Admin
-            </Link>
           </motion.div>
         )}
       </AnimatePresence>

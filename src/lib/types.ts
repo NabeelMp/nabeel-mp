@@ -1,10 +1,5 @@
-export type CategoryKey =
-  | 'branding'
-  | 'packaging'
-  | 'package'
-  | 'video-editing'
-  | 'motion-graphics'
-  | '3d-animation'
+/** Discipline keys are free-form strings now that categories are editable in the admin. */
+export type CategoryKey = string
 
 export interface Category {
   key: CategoryKey

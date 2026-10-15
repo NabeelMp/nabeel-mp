@@ -2,21 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: dark; }
+/*
+ * The palette is driven by CSS variables so the whole site can flip between the
+ * dark "ink" theme and a light "paper" theme. Tailwind colours (ink/coal/ash/
+ * bone/line) map onto these variables in tailwind.config.js. `ember`/`lime`
+ * stay fixed accents. `onaccent` is the text colour placed on ember fills.
+ */
+:root,
+.dark {
+  color-scheme: dark;
+  --c-ink: 7 7 7;
+  --c-coal: 17 17 17;
+  --c-ash: 27 27 27;
+  --c-bone: 242 239 233;
+  --c-line: 242 239 233;
+  --c-onaccent: 7 7 7;
+}
+
+.light {
+  color-scheme: light;
+  --c-ink: 246 244 240;
+  --c-coal: 255 255 255;
+  --c-ash: 235 231 223;
+  --c-bone: 24 21 17;
+  --c-line: 24 21 17;
+}
+
 html { scroll-behavior: auto; -webkit-tap-highlight-color: transparent; }
-body { @apply bg-ink text-bone font-sans antialiased; overflow-x: hidden; }
+body { @apply bg-ink text-bone font-sans antialiased; overflow-x: hidden; transition: background-color .4s ease, color .4s ease; }
 ::selection { background: #ff5a1f; color: #070707; }
 
 @layer components {
   .container-x { @apply mx-auto w-full max-w-[1320px] px-5 sm:px-8 lg:px-12; }
   .eyebrow { @apply font-sans text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.35em] text-bone/50; }
   .h-section { @apply font-display leading-[0.85] tracking-tight text-[clamp(3.5rem,11vw,10rem)]; }
-  .chip { @apply inline-flex items-center gap-2 rounded-full border border-bone/15 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-bone/70; }
+  .chip { @apply inline-flex items-center gap-2 rounded-full border border-line/15 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-bone/70; }
   .btn { @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300; }
-  .btn-ember { @apply btn bg-ember text-ink hover:bg-bone hover:scale-[1.03]; }
-  .btn-ghost { @apply btn border border-bone/20 text-bone hover:border-bone hover:bg-bone hover:text-ink; }
-  .card { @apply rounded-[28px] border border-bone/10 bg-coal; }
-  .input { @apply w-full rounded-2xl border border-bone/10 bg-ash px-4 py-3 text-sm text-bone placeholder:text-bone/30 outline-none transition focus:border-ember; }
+  .btn-ember { @apply btn bg-ember text-onaccent hover:bg-bone hover:text-ink hover:scale-[1.03]; }
+  .btn-ghost { @apply btn border border-line/20 text-bone hover:border-bone hover:bg-bone hover:text-ink; }
+  .card { @apply rounded-[28px] border border-line/10 bg-coal; }
+  .input { @apply w-full rounded-2xl border border-line/10 bg-ash px-4 py-3 text-sm text-bone placeholder:text-bone/30 outline-none transition focus:border-ember; }
 }
 
 .grain::after {

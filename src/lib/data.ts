@@ -1,60 +1,9 @@
-import type { Category, Review, Work } from './types'
+import type { Review, Work } from './types'
 
-export const profile = {
-  name: 'Muhammed Nabeel MP',
-  short: 'Nabeel',
-  roles: ['Graphic Designer', 'Brand Designer', 'Multimedia Expert'],
-  tagline: 'Built to be remembered.',
-  intro:
-    'A branding & visual identity designer building expressive systems for brands with ambition.',
-  about:
-    "For the past eight years I've partnered with founders, agencies and cultural institutions to craft identity systems that feel considered, alive and unmistakably theirs. My work sits at the intersection of strategy, typography and a slight obsession with detail — from brand strategy to the smallest kerning pair.",
-  values: ['Minimal', 'Purposeful', 'Systematic', 'Creative', 'Timeless', 'Experimental'],
-  stats: [
-    { value: 8, suffix: '+', label: 'Years' },
-    { value: 120, suffix: '+', label: 'Projects' },
-    { value: 60, suffix: '+', label: 'Studios & founders' },
-  ],
-}
-
-export const contact = {
-  emails: ['nabeelmp3506@gmail.com', 'evoquestudio01@gmail.com'],
-  whatsappNumber: '919778252520',
-  whatsappDisplay: '+91 97782 52520',
-  instagram: 'nabeel.omr',
-  behance: 'nabeelmp3506',
-}
-
-export const mailtoAll = `mailto:${contact.emails.join(',')}?subject=${encodeURIComponent(
-  "Let's build something remarkable",
-)}`
-export const whatsappUrl = `https://wa.me/${contact.whatsappNumber}?text=${encodeURIComponent(
-  'Hi Nabeel! I saw your portfolio and would love to talk.',
-)}`
-export const instagramUrl = `https://www.instagram.com/${contact.instagram}/`
-export const behanceUrl = `https://www.behance.net/${contact.behance}`
-
-export const services = [
-  { title: 'Brand Strategy', text: 'Positioning, naming, voice and the foundations that give identity meaning.' },
-  { title: 'Logo Design', text: 'Marks built to endure, scale and speak fluently across every medium.' },
-  { title: 'Visual Systems', text: 'Typography, colour, grids and motion operating as one cohesive language.' },
-  { title: 'Packaging', text: 'Tactile, considered structures that turn products into objects of desire.' },
-  { title: 'Creative Direction', text: 'Campaign concepting and art direction across film, print and digital.' },
-  { title: 'Motion & 3D', text: 'Video editing, motion graphics and 3D animation that make brands move.' },
-]
-
-export const process = ['Discover', 'Research', 'Strategy', 'Concept', 'Identity', 'Execution']
-
-export const categories: Category[] = [
-  { key: 'branding', index: '01', title: 'Branding', short: 'Identity', accent: '#ff5a1f', blurb: 'Identity systems, logos and brand worlds with a spine.' },
-  { key: 'packaging', index: '02', title: 'Packaging', short: 'Structure', accent: '#d7ff3a', blurb: 'Boxes, bottles and labels that beg to be picked up.' },
-  { key: 'package', index: '03', title: 'Package', short: 'Product', accent: '#7cc6ff', blurb: 'Complete product packages — from concept to shelf-ready.' },
-  { key: 'video-editing', index: '04', title: 'Video Editing', short: 'Cut', accent: '#ff7ad9', blurb: 'Rhythm, story and pace — edits that keep eyes glued.' },
-  { key: 'motion-graphics', index: '05', title: 'Motion Graphics', short: 'Motion', accent: '#ffd23f', blurb: 'Type, shape and logo animation with personality.' },
-  { key: '3d-animation', index: '06', title: '3D Animation', short: 'Depth', accent: '#9b8cff', blurb: 'Products, scenes and characters rendered in depth.' },
-]
-
-export const categoryByKey = (key?: string) => categories.find((c) => c.key === key)
+// Static profile/contact/services/categories now live in the editable site store
+// (src/lib/site.ts) and are exposed through the SiteProvider. What remains here is
+// the demo seed content used when Supabase is not configured.
+export { defaultSite } from './site'
 
 const seed = (
   id: string,

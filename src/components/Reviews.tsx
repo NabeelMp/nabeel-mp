@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { listReviews } from '../lib/api'
+import { useSite } from '../lib/site'
 import type { Review } from '../lib/types'
 import Stars from './Stars'
 import { Reveal, SplitWords } from './Reveal'
@@ -27,6 +28,8 @@ function Card({ r }: { r: Review }) {
 }
 
 export default function Reviews() {
+  const { site } = useSite()
+  const copy = site.content.reviews
   const [reviews, setReviews] = useState<Review[]>([])
   useEffect(() => {
     listReviews({ fiveStarOnly: true }).then(setReviews).catch(console.error)
@@ -40,17 +43,16 @@ export default function Reviews() {
       <div className="container-x flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
           <Reveal>
-            <p className="eyebrow">Kind words · 04</p>
+            <p className="eyebrow">{copy.eyebrow}</p>
           </Reveal>
           <h2 className="h-section mt-4">
-            <SplitWords text="What people" />
+            <SplitWords text={copy.title} />
             <br />
-            <SplitWords text="say." className="text-ember" delay={0.1} />
+            <SplitWords text={copy.titleAccent} className="text-ember" delay={0.1} />
           </h2>
         </div>
         <Reveal delay={0.2} className="flex items-center gap-3">
           <Stars value={5} />
-          <span className="text-sm text-bone/55">Only 5-star reviews make it here.</span>
         </Reveal>
       </div>
 

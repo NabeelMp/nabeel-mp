@@ -25,7 +25,7 @@ export async function listWorks(category?: CategoryKey): Promise<Work[]> {
     if (!error) return (data ?? []) as Work[]
     console.warn('Supabase works unavailable, showing starter content:', error.message)
   }
-  const all = read<Work[]>(LS_WORKS, seedWorks).sort(byNewest)
+  const all = [...read<Work[]>(LS_WORKS, seedWorks)].sort(byNewest)
   return category ? all.filter((w) => w.category === category) : all
 }
 
@@ -49,6 +49,20 @@ export async function createWork(work: NewWork): Promise<Work> {
   return created
 }
 
+export async function updateWork(id: string, patch: Partial<NewWork>): Promise<Work> {
+  if (supabase) {
+    const { data, error } = await supabase.from('works').update(patch).eq('id', id).select().single()
+    if (error) throw error
+    return data as Work
+  }
+  const all = read<Work[]>(LS_WORKS, seedWorks)
+  const current = all.find((w) => w.id === id)
+  if (!current) throw new Error('Work not found')
+  const updated: Work = { ...current, ...patch }
+  write(LS_WORKS, all.map((w) => (w.id === id ? updated : w)))
+  return updated
+}
+
 export async function deleteWork(id: string): Promise<void> {
   if (supabase) {
     const { error } = await supabase.from('works').delete().eq('id', id)
@@ -68,7 +82,7 @@ export async function listReviews(opts: { workId?: string; fiveStarOnly?: boolea
     if (!error) return (data ?? []) as Review[]
     console.warn('Supabase reviews unavailable, showing starter content:', error.message)
   }
-  return read<Review[]>(LS_REVIEWS, seedReviews)
+  return [...read<Review[]>(LS_REVIEWS, seedReviews)]
     .filter((r) => (opts.workId ? r.work_id === opts.workId : true))
     .filter((r) => (opts.fiveStarOnly ? r.rating === 5 : true))
     .sort(byNewest)
@@ -111,3 +125,13 @@ export async function uploadMedia(file: File): Promise<string> {
 
 export const slugify = (s: string) =>
   s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+
+/** Slugify and append -2, -3, … until it is unique within the given existing slugs. */
+export const uniqueSlug = (title: string, taken: Iterable<string>) => {
+  const base = slugify(title) || 'work'
+  const used = new Set(taken)
+  if (!used.has(base)) return base
+  let n = 2
+  while (used.has(`${base}-${n}`)) n += 1
+  return `${base}-${n}`
+}
