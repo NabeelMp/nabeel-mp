@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from './supabase'
 
 const DEMO_SESSION_KEY = 'nabeel.demoAdmin'
@@ -128,6 +128,21 @@ export function useAutoLock(isAdmin: boolean) {
       events.forEach((e) => window.removeEventListener(e, reset))
       document.removeEventListener('visibilitychange', hide)
       window.removeEventListener('pagehide', bye)
+    }
+  }, [isAdmin])
+}
+
+/** Signs the admin out as soon as they navigate away from the admin route. */
+export function useSignOutOnLeave(isAdmin: boolean) {
+  const armed = useRef(false)
+  useEffect(() => {
+    if (isAdmin) {
+      armed.current = true
+      return
+    }
+    if (armed.current) {
+      armed.current = false
+      void signOut()
     }
   }, [isAdmin])
 }
