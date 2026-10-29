@@ -36,6 +36,11 @@ export function getDemoCredentials(): Credentials {
   return { ...DEFAULT_DEMO_CREDENTIALS }
 }
 
+/** The built-in demo login, used only by the explicit "restore" recovery action. */
+export function getDefaultCredentials(): Credentials {
+  return { ...DEFAULT_DEMO_CREDENTIALS }
+}
+
 export function useAdminSession() {
   const [state, setState] = useState<{ loading: boolean; isAdmin: boolean; email: string | null }>({
     loading: true,
@@ -72,11 +77,9 @@ export async function signIn(username: string, password: string) {
   if (!supabase) {
     const creds = getDemoCredentials()
     const u = username.trim()
-    // The default admin/admin pair always works as a master fallback, so
-    // changing the demo password can never lock the owner out of the panel.
-    const isDefault = u === DEFAULT_DEMO_CREDENTIALS.username && password === DEFAULT_DEMO_CREDENTIALS.password
-    const isCustom = u === creds.username && password === creds.password
-    if (isDefault || isCustom) {
+    // Only the stored credentials work. Changing the password therefore takes
+    // effect immediately and the previous password stops being accepted.
+    if (u === creds.username && password === creds.password) {
       sessionStorage.setItem(DEMO_SESSION_KEY, '1')
       emitDemo()
       return
@@ -148,7 +151,8 @@ export function useSignOutOnLeave(isAdmin: boolean) {
 export async function changeCredentials(next: { username?: string; password: string; current?: string }): Promise<void> {
   if (!supabase) {
     const creds = getDemoCredentials()
-    if (next.current && next.current !== creds.password) throw new Error('Current password is incorrect')
+    if (!next.current) throw new Error('Enter your current password to change it')
+    if (next.current !== creds.password) throw new Error('Current password is incorrect')
     const username = (next.username ?? creds.username).trim()
     if (!username) throw new Error('Username cannot be empty')
     if (next.password.length < 4) throw new Error('Password must be at least 4 characters')

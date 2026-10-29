@@ -1,6 +1,6 @@
 import { useEffect, useId, useState, type ChangeEvent, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
-import { Eye, EyeOff, ImagePlus, Plus, Trash2, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, Eye, EyeOff, ImagePlus, Plus, Star, Trash2, X } from 'lucide-react'
 import { uploadMedia } from '../../lib/api'
 
 export function Section({ title, hint, children, aside }: { title: string; hint?: string; children: ReactNode; aside?: ReactNode }) {
@@ -200,6 +200,114 @@ export function ImageInput({ value, onChange, label }: { value: string; onChange
         </div>
       </div>
       <input className="input !py-2 !text-xs" value={value} placeholder="…or paste an image URL" onChange={(e) => onChange(e.target.value)} />
+      {err && <span className="text-[11px] text-ember">{err}</span>}
+    </div>
+  )
+}
+
+/**
+ * A project gallery: upload several images at once, reorder them, drop them by
+ * URL, or remove one. Reordering controls the order on the public work page.
+ */
+export function ImageGalleryEditor({ images, onChange, label, onMakeCover, cover }: { images: string[]; onChange: (v: string[]) => void; label: string; onMakeCover?: (src: string) => void; cover?: string }) {
+  const [busy, setBusy] = useState(false)
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
+  const [err, setErr] = useState<string | null>(null)
+  const [manual, setManual] = useState('')
+
+  const pick = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    if (!files.length) return
+    setBusy(true)
+    setErr(null)
+    setProgress({ done: 0, total: files.length })
+    const uploaded: string[] = []
+    const failed: string[] = []
+    for (let i = 0; i < files.length; i += 1) {
+      try {
+        uploaded.push(await uploadMedia(files[i]))
+      } catch {
+        failed.push(files[i].name)
+      }
+      setProgress({ done: i + 1, total: files.length })
+    }
+    if (uploaded.length) onChange([...images, ...uploaded])
+    if (failed.length) setErr(`Could not upload: ${failed.join(', ')}`)
+    setProgress(null)
+    setBusy(false)
+    e.target.value = ''
+  }
+
+  const move = (i: number, dir: -1 | 1) => {
+    const j = i + dir
+    if (j < 0 || j >= images.length) return
+    const next = [...images]
+    ;[next[i], next[j]] = [next[j], next[i]]
+    onChange(next)
+  }
+
+  const addManual = () => {
+    const url = manual.trim()
+    if (!url) return
+    onChange([...images, url])
+    setManual('')
+  }
+
+  return (
+    <div className="grid gap-3">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-bone/50">{label}</span>
+      {images.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {images.map((src, i) => (
+            <div key={`${src}-${i}`} className="group relative overflow-hidden rounded-2xl border border-line/10 bg-ash">
+              <img src={src} alt="" className="aspect-square w-full object-cover" />
+              <span className="absolute left-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-ink/70 text-[10px] font-semibold">{i + 1}</span>
+              {cover === src && <span className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-ember text-onaccent" title="Cover image"><Star size={12} /></span>}
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 bg-ink/70 p-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+                {onMakeCover && cover !== src && (
+                  <button type="button" onClick={() => onMakeCover(src)} className="grid h-7 w-7 place-items-center rounded-full border border-line/20 text-bone" aria-label="Use as cover" title="Use as cover">
+                    <Star size={13} />
+                  </button>
+                )}
+                <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="grid h-7 w-7 place-items-center rounded-full border border-line/20 text-bone disabled:opacity-30" aria-label="Move earlier">
+                  <ChevronUp size={13} />
+                </button>
+                <button type="button" onClick={() => move(i, 1)} disabled={i === images.length - 1} className="grid h-7 w-7 place-items-center rounded-full border border-line/20 text-bone disabled:opacity-30" aria-label="Move later">
+                  <ChevronDown size={13} />
+                </button>
+                <button type="button" onClick={() => onChange(images.filter((_, k) => k !== i))} className="grid h-7 w-7 place-items-center rounded-full border border-line/20 text-ember" aria-label="Remove image">
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="btn-ghost w-fit cursor-pointer !px-4 !py-2 !text-xs">
+          <ImagePlus size={14} />{' '}
+          {busy && progress ? `Uploading ${progress.done}/${progress.total}…` : 'Add images'}
+          <input type="file" accept="image/*" multiple className="hidden" onChange={pick} />
+        </label>
+        <span className="text-[11px] text-bone/35">Select several files at once</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          className="input !py-2 !text-xs"
+          value={manual}
+          placeholder="…or paste an image URL and press Add"
+          onChange={(e) => setManual(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              addManual()
+            }
+          }}
+        />
+        <button type="button" onClick={addManual} className="btn-ghost shrink-0 !px-4 !py-2 !text-xs">
+          Add
+        </button>
+      </div>
       {err && <span className="text-[11px] text-ember">{err}</span>}
     </div>
   )

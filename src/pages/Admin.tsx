@@ -37,9 +37,9 @@ import {
   ServicesEditor,
   SiteSettingsBar,
 } from '../components/admin/sections'
-import { EmptyState, Field, ImageInput, PasswordInput, Section, TextArea, TextInput, Toast } from '../components/admin/ui'
+import { EmptyState, Field, ImageGalleryEditor, ImageInput, PasswordInput, Section, TextArea, TextInput, Toast } from '../components/admin/ui'
 import { createWork, deleteReview, deleteWork, listReviews, listWorks, uniqueSlug, updateWork } from '../lib/api'
-import { changeCredentials, getDemoCredentials, resetDemoCredentials, signIn, signOut, useAdminSession, useAutoLock } from '../lib/auth'
+import { changeCredentials, getDefaultCredentials, getDemoCredentials, resetDemoCredentials, signIn, signOut, useAdminSession, useAutoLock } from '../lib/auth'
 import { isSupabaseReady } from '../lib/supabase'
 import { useSite } from '../lib/site'
 import type { CategoryKey, NewWork, Review, Work } from '../lib/types'
@@ -209,7 +209,6 @@ const toDraft = (w: Work): WorkDraft => ({
 
 function WorkEditor({ draft, setDraft, categories }: { draft: WorkDraft; setDraft: (d: WorkDraft) => void; categories: { key: CategoryKey; title: string }[] }) {
   const set = <K extends keyof WorkDraft>(k: K, v: WorkDraft[K]) => setDraft({ ...draft, [k]: v })
-  const setGalleryAt = (i: number, v: string) => set('gallery', draft.gallery.map((g, k) => (k === i ? v : g)))
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -247,22 +246,17 @@ function WorkEditor({ draft, setDraft, categories }: { draft: WorkDraft; setDraf
         </Field>
       </div>
       <ImageInput label="Cover image" value={draft.cover_url} onChange={(v) => set('cover_url', v)} />
-      <div className="grid gap-3">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-bone/50">Gallery images</span>
-        {draft.gallery.map((g, i) => (
-          <div key={i} className="flex items-end gap-2">
-            <div className="flex-1">
-              <ImageInput label={`Image ${i + 1}`} value={g} onChange={(v) => setGalleryAt(i, v)} />
-            </div>
-            <button type="button" onClick={() => set('gallery', draft.gallery.filter((_, k) => k !== i))} className="mb-1 grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line/15 text-ember transition-colors hover:bg-ember hover:text-onaccent" aria-label="Remove image">
-              <Trash2 size={14} />
-            </button>
-          </div>
-        ))}
-        <button type="button" onClick={() => set('gallery', [...draft.gallery, ''])} className="btn-ghost w-fit !px-4 !py-2 !text-xs">
-          <Plus size={14} /> Add gallery image
-        </button>
-      </div>
+      <ImageGalleryEditor
+        label="Gallery images"
+        images={draft.gallery}
+        onChange={(g) => set('gallery', g)}
+        cover={draft.cover_url}
+        onMakeCover={(src) => {
+          const rest = draft.gallery.filter((g) => g !== src)
+          const prevCover = draft.cover_url && draft.cover_url !== src ? draft.cover_url : ''
+          setDraft({ ...draft, gallery: prevCover ? [prevCover, ...rest] : rest, cover_url: src })
+        }}
+      />
     </>
   )
 }
@@ -520,7 +514,8 @@ function SecurityTab({ onToast }: { onToast: (m: string) => void }) {
           {!isSupabaseReady && (
             <button
               onClick={() => {
-                if (confirm('Restore the default demo login?')) {
+                const d = getDefaultCredentials()
+                if (confirm(`Restore the default login (${d.username} / ${d.password})?`)) {
                   resetDemoCredentials()
                   onToast('Demo login restored')
                 }
