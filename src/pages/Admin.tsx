@@ -39,7 +39,7 @@ import {
 } from '../components/admin/sections'
 import { EmptyState, Field, ImageInput, PasswordInput, Section, TextArea, TextInput, Toast } from '../components/admin/ui'
 import { createWork, deleteReview, deleteWork, listReviews, listWorks, uniqueSlug, updateWork } from '../lib/api'
-import { changeCredentials, DEFAULT_DEMO_CREDENTIALS, getDemoCredentials, resetDemoCredentials, signIn, signOut, useAdminSession, useAutoLock } from '../lib/auth'
+import { changeCredentials, getDemoCredentials, resetDemoCredentials, signIn, signOut, useAdminSession, useAutoLock } from '../lib/auth'
 import { isSupabaseReady } from '../lib/supabase'
 import { useSite } from '../lib/site'
 import type { CategoryKey, NewWork, Review, Work } from '../lib/types'
@@ -139,11 +139,6 @@ function Login() {
             <button type="button" onClick={() => setShowChange((v) => !v)} className="text-xs text-bone/50 hover:text-ember">
               {showChange ? '— Hide password options' : 'Change password'}
             </button>
-          )}
-          {!isSupabaseReady && (
-            <p className="text-xs text-bone/40">
-              Demo mode — sign in with <span className="text-bone">{DEFAULT_DEMO_CREDENTIALS.username}</span> / <span className="text-bone">{DEFAULT_DEMO_CREDENTIALS.password}</span>
-            </p>
           )}
         </form>
 
@@ -517,7 +512,7 @@ function SecurityTab({ onToast }: { onToast: (m: string) => void }) {
         </form>
       </Section>
 
-      <Section title="Session & recovery" hint="Sign out or restore the default demo login (admin / admin always works).">
+      <Section title="Session & recovery" hint="Sign out or restore the default demo login.">
         <div className="grid gap-3">
           <button onClick={signOut} className="btn-ghost w-fit">
             <LogOut size={15} /> Sign out
@@ -525,7 +520,7 @@ function SecurityTab({ onToast }: { onToast: (m: string) => void }) {
           {!isSupabaseReady && (
             <button
               onClick={() => {
-                if (confirm('Restore the default demo login (admin / admin)?')) {
+                if (confirm('Restore the default demo login?')) {
                   resetDemoCredentials()
                   onToast('Demo login restored')
                 }
@@ -538,7 +533,7 @@ function SecurityTab({ onToast }: { onToast: (m: string) => void }) {
           <p className="text-xs text-bone/40">
             {isSupabaseReady
               ? 'Admin access is enforced by Supabase Row Level Security and the is_admin() check.'
-              : 'Demo mode stores content and credentials in this browser only (localStorage). Configure Supabase for production.'}
+              : 'Demo mode stores content and credentials in this browser only (IndexedDB). Configure Supabase for production.'}
           </p>
         </div>
       </Section>

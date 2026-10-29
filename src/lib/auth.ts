@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { cacheGet, removeKey, saveKey } from './store'
 import { supabase } from './supabase'
 
 const DEMO_SESSION_KEY = 'nabeel.demoAdmin'
@@ -30,15 +31,8 @@ function readDemoSession(): { loading: boolean; isAdmin: boolean; email: string 
 
 /** Demo credentials, overridable by the admin from the Security tab. */
 export function getDemoCredentials(): Credentials {
-  try {
-    const raw = localStorage.getItem(DEMO_CREDS_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw) as Partial<Credentials>
-      if (parsed.username && parsed.password) return { username: parsed.username, password: parsed.password }
-    }
-  } catch {
-    /* ignore malformed storage */
-  }
+  const parsed = cacheGet<Partial<Credentials>>(DEMO_CREDS_KEY)
+  if (parsed?.username && parsed.password) return { username: parsed.username, password: parsed.password }
   return { ...DEFAULT_DEMO_CREDENTIALS }
 }
 
@@ -158,7 +152,7 @@ export async function changeCredentials(next: { username?: string; password: str
     const username = (next.username ?? creds.username).trim()
     if (!username) throw new Error('Username cannot be empty')
     if (next.password.length < 4) throw new Error('Password must be at least 4 characters')
-    localStorage.setItem(DEMO_CREDS_KEY, JSON.stringify({ username, password: next.password }))
+    void saveKey(DEMO_CREDS_KEY, { username, password: next.password })
     return
   }
   const { error } = await supabase.auth.updateUser({ password: next.password })
@@ -167,5 +161,5 @@ export async function changeCredentials(next: { username?: string; password: str
 
 /** Demo mode only: restore the default admin/admin login. */
 export function resetDemoCredentials() {
-  localStorage.removeItem(DEMO_CREDS_KEY)
+  void removeKey(DEMO_CREDS_KEY)
 }

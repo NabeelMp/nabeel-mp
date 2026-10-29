@@ -1,19 +1,13 @@
 import { seedReviews, seedWorks } from './data'
 import { supabase, WORKS_BUCKET } from './supabase'
+import { cacheGet, saveKey } from './store'
 import type { CategoryKey, NewReview, NewWork, Review, Work } from './types'
 
-// Without Supabase env vars the site runs on seed data persisted to localStorage (demo mode).
+// Without Supabase env vars the site runs on seed data persisted to IndexedDB (demo mode).
 const LS_WORKS = 'nabeel.works'
 const LS_REVIEWS = 'nabeel.reviews'
-const read = <T,>(key: string, fallback: T): T => {
-  try {
-    const raw = localStorage.getItem(key)
-    return raw ? (JSON.parse(raw) as T) : fallback
-  } catch {
-    return fallback
-  }
-}
-const write = (key: string, value: unknown) => localStorage.setItem(key, JSON.stringify(value))
+const read = <T,>(key: string, fallback: T): T => cacheGet<T>(key) ?? fallback
+const write = (key: string, value: unknown) => saveKey(key, value)
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2))
 const byNewest = <T extends { created_at: string }>(a: T, b: T) => b.created_at.localeCompare(a.created_at)
 
@@ -45,7 +39,7 @@ export async function createWork(work: NewWork): Promise<Work> {
     return data as Work
   }
   const created: Work = { ...work, id: uid(), created_at: new Date().toISOString() }
-  write(LS_WORKS, [created, ...read<Work[]>(LS_WORKS, seedWorks)])
+  await write(LS_WORKS, [created, ...read<Work[]>(LS_WORKS, seedWorks)])
   return created
 }
 
@@ -59,7 +53,7 @@ export async function updateWork(id: string, patch: Partial<NewWork>): Promise<W
   const current = all.find((w) => w.id === id)
   if (!current) throw new Error('Work not found')
   const updated: Work = { ...current, ...patch }
-  write(LS_WORKS, all.map((w) => (w.id === id ? updated : w)))
+  await write(LS_WORKS, all.map((w) => (w.id === id ? updated : w)))
   return updated
 }
 
@@ -69,8 +63,8 @@ export async function deleteWork(id: string): Promise<void> {
     if (error) throw error
     return
   }
-  write(LS_WORKS, read<Work[]>(LS_WORKS, seedWorks).filter((w) => w.id !== id))
-  write(LS_REVIEWS, read<Review[]>(LS_REVIEWS, seedReviews).filter((r) => r.work_id !== id))
+  await write(LS_WORKS, read<Work[]>(LS_WORKS, seedWorks).filter((w) => w.id !== id))
+  await write(LS_REVIEWS, read<Review[]>(LS_REVIEWS, seedReviews).filter((r) => r.work_id !== id))
 }
 
 export async function listReviews(opts: { workId?: string; fiveStarOnly?: boolean } = {}): Promise<Review[]> {
@@ -95,7 +89,7 @@ export async function addReview(review: NewReview): Promise<Review> {
     return data as Review
   }
   const created: Review = { ...review, id: uid(), created_at: new Date().toISOString() }
-  write(LS_REVIEWS, [created, ...read<Review[]>(LS_REVIEWS, seedReviews)])
+  await write(LS_REVIEWS, [created, ...read<Review[]>(LS_REVIEWS, seedReviews)])
   return created
 }
 
@@ -105,7 +99,7 @@ export async function deleteReview(id: string): Promise<void> {
     if (error) throw error
     return
   }
-  write(LS_REVIEWS, read<Review[]>(LS_REVIEWS, seedReviews).filter((r) => r.id !== id))
+  await write(LS_REVIEWS, read<Review[]>(LS_REVIEWS, seedReviews).filter((r) => r.id !== id))
 }
 
 export async function uploadMedia(file: File): Promise<string> {

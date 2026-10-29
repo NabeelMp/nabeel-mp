@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { Category } from './types'
+import { cacheGet, removeKey, saveKey } from './store'
 
 export const SITE_KEY = 'nabeel.site'
 
@@ -215,19 +216,15 @@ function merge<T>(base: T, override: unknown): T {
 export function loadSite(): SiteContent {
   if (typeof window === 'undefined') return defaultSite
   try {
-    const raw = localStorage.getItem(SITE_KEY)
-    return raw ? merge(defaultSite, JSON.parse(raw)) : defaultSite
+    const raw = cacheGet<SiteContent>(SITE_KEY)
+    return raw ? merge(defaultSite, raw) : defaultSite
   } catch {
     return defaultSite
   }
 }
 
 function persist(site: SiteContent) {
-  try {
-    localStorage.setItem(SITE_KEY, JSON.stringify(site))
-  } catch {
-    /* storage unavailable — keep in-memory copy */
-  }
+  void saveKey(SITE_KEY, site)
 }
 
 export interface SiteContextValue {
@@ -257,11 +254,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
 
   const reset = useCallback(() => {
     setSite(defaultSite)
-    try {
-      localStorage.removeItem(SITE_KEY)
-    } catch {
-      /* ignore */
-    }
+    void removeKey(SITE_KEY)
   }, [])
 
   // Keep the document title/meta in sync with editable content.
