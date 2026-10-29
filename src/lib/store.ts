@@ -107,17 +107,22 @@ export async function preloadStore(keys: string[]): Promise<void> {
 }
 
 export async function saveKey(key: string, value: unknown): Promise<void> {
-  cache.set(key, value)
   const db = await openDb()
   if (db) {
     try {
       await run(db, 'readwrite', (s) => s.put(value, key))
+      cache.set(key, value)
       return
     } catch {
       /* fall through to localStorage so the write is not lost */
     }
   }
-  localStorage.setItem(key, JSON.stringify(value))
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch {
+    throw new Error('Browser storage is full — remove some images or connect Supabase storage.')
+  }
+  cache.set(key, value)
 }
 
 export async function removeKey(key: string): Promise<void> {

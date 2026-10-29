@@ -21,6 +21,25 @@ react-router-dom + Supabase + lucide-react.
   emails prefilled.
 
 ## Notes
+- Persistence (demo mode, no Supabase env vars): site content, works and
+  reviews live in an IndexedDB key/value store (`src/lib/store.ts`,
+  DB `nabeel-store`) with a synchronous in-memory cache filled by
+  `preloadStore()` before render. IndexedDB replaced localStorage because
+  uploaded images are stored inline as data URLs and blow past the ~5 MB
+  localStorage cap after a few works — every later save then threw
+  `QuotaExceededError` and edits looked lost. `saveKey` now throws a clear
+  "storage is full" error instead of failing silently.
+- Uploads are downscaled before storing (`src/lib/image.ts`): raster images
+  larger than 400 KB are re-encoded to a max 1600 px JPEG at quality 0.82, so
+  many images fit and hundreds of works are possible. With Supabase configured,
+  images go to the `works` storage bucket instead and are not inlined.
+- Disciplines (categories) are fully editable in the admin — add, rename,
+  re-key or delete any of them, and each can hold any number of works. There is
+  no cap on the number of works or gallery images per work. The Supabase
+  `works.category` column has no fixed `CHECK` constraint (schema.sql drops the
+  legacy one), so new discipline keys persist.
+- The work editor's gallery (`ImageGalleryEditor`) accepts a multi-file select
+  in one click, with per-image progress, reorder, remove and "use as cover".
 - Routing is client-side (`BrowserRouter`). Hosting must rewrite all paths to
   `/index.html` or deep links like `/admin` return the host's own 404 page.
   `vercel.json` provides that SPA rewrite. Do **not** use `window.location.reload()`

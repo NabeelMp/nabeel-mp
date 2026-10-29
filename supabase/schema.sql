@@ -14,7 +14,7 @@ grant execute on function public.is_admin() to anon, authenticated;
 
 create table if not exists public.works (
   id uuid primary key default gen_random_uuid(),
-  category text not null check (category in ('branding','packaging','package','video-editing','motion-graphics','3d-animation')),
+  category text not null,
   slug text not null,
   title text not null,
   client text,
@@ -28,6 +28,10 @@ create table if not exists public.works (
   created_at timestamptz not null default now(),
   unique (category, slug)
 );
+
+-- Disciplines are editable in the admin, so the category must accept any key.
+-- Older installs shipped a fixed CHECK constraint; drop it if it is present.
+alter table public.works drop constraint if exists works_category_check;
 
 create table if not exists public.reviews (
   id uuid primary key default gen_random_uuid(),

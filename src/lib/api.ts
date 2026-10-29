@@ -1,4 +1,5 @@
 import { seedReviews, seedWorks } from './data'
+import { prepareImage } from './image'
 import { supabase, WORKS_BUCKET } from './supabase'
 import { cacheGet, saveKey } from './store'
 import type { CategoryKey, NewReview, NewWork, Review, Work } from './types'
@@ -103,9 +104,10 @@ export async function deleteReview(id: string): Promise<void> {
 }
 
 export async function uploadMedia(file: File): Promise<string> {
+  const prepared = await prepareImage(file)
   if (supabase) {
-    const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
-    const { error } = await supabase.storage.from(WORKS_BUCKET).upload(path, file, { upsert: false })
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${prepared.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
+    const { error } = await supabase.storage.from(WORKS_BUCKET).upload(path, prepared, { upsert: false })
     if (error) throw error
     return supabase.storage.from(WORKS_BUCKET).getPublicUrl(path).data.publicUrl
   }
@@ -113,7 +115,7 @@ export async function uploadMedia(file: File): Promise<string> {
     const reader = new FileReader()
     reader.onload = () => resolve(reader.result as string)
     reader.onerror = reject
-    reader.readAsDataURL(file)
+    reader.readAsDataURL(prepared)
   })
 }
 
