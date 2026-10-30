@@ -44,9 +44,19 @@ create table if not exists public.reviews (
 );
 create index if not exists reviews_work_id_idx on public.reviews(work_id);
 
+-- The whole editable site document (profile, hero, section copy, disciplines,
+-- contact, footer) lives in a single row so admin edits to headings and copy
+-- show up in every browser, not just the one they were made in.
+create table if not exists public.site_meta (
+  id text primary key,
+  content jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
 alter table public.admins enable row level security;
 alter table public.works enable row level security;
 alter table public.reviews enable row level security;
+alter table public.site_meta enable row level security;
 
 drop policy if exists "admins self read" on public.admins;
 create policy "admins self read" on public.admins for select using (user_id = auth.uid());
@@ -62,6 +72,11 @@ drop policy if exists "reviews public insert" on public.reviews;
 create policy "reviews public insert" on public.reviews for insert with check (work_id is not null);
 drop policy if exists "reviews admin delete" on public.reviews;
 create policy "reviews admin delete" on public.reviews for delete using (public.is_admin());
+
+drop policy if exists "site_meta public read" on public.site_meta;
+create policy "site_meta public read" on public.site_meta for select using (true);
+drop policy if exists "site_meta admin write" on public.site_meta;
+create policy "site_meta admin write" on public.site_meta for all using (public.is_admin()) with check (public.is_admin());
 
 insert into storage.buckets (id, name, public) values ('works', 'works', true)
 on conflict (id) do update set public = true;

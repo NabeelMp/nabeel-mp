@@ -29,10 +29,41 @@ react-router-dom + Supabase + lucide-react.
   localStorage cap after a few works — every later save then threw
   `QuotaExceededError` and edits looked lost. `saveKey` now throws a clear
   "storage is full" error instead of failing silently.
+- **Demo mode is per-browser.** IndexedDB and `sessionStorage` do not travel
+  between browsers, devices or Chrome profiles, so admin edits made in demo mode
+  are only visible in the browser that made them. To make edits show up for
+  everyone, configure Supabase (below); every reader then loads shared content.
+- **Where edits persist with Supabase configured:**
+  - works → `public.works`, uploads → the `works` storage bucket
+  - reviews → `public.reviews`
+  - site copy, profile, hero, disciplines/categories, contact and footer → the
+    single `public.site_meta` row (`id = 'default'`, whole document in the
+    `content` jsonb). `SiteProvider` loads this on mount (`loadSiteRemote`) and
+    every `update`/`save` writes it back, so a heading edited in the admin shows
+    on any other browser/device.
+  - Env: `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`, or the un-prefixed
+    `SUPABASE_URL` / `SUPABASE_ANON_KEY`. Re-run `supabase/schema.sql` to create
+    the `site_meta` table and policies.
+  - One-time migration: `migrateLocalToSupabase()` (`src/lib/api.ts`, called from
+    `src/main.tsx`) uploads this browser's demo-mode works/reviews when the
+    backend is configured but empty, so previously-only-local edits are not
+    stranded.
 - Uploads are downscaled before storing (`src/lib/image.ts`): raster images
   larger than 400 KB are re-encoded to a max 1600 px JPEG at quality 0.82, so
   many images fit and hundreds of works are possible. With Supabase configured,
   images go to the `works` storage bucket instead and are not inlined.
+- **This is a client-side SPA, not a Next.js/SSR app.** It uses
+  `@supabase/supabase-js` in the browser only. Do **not** add `@supabase/ssr`,
+  `next/headers`, middleware, or `NEXT_PUBLIC_*` env vars — they do not apply to
+  Vite and would break the build. Supabase's "create a Next.js app" snippets are
+  for a different framework; the browser client here is `src/lib/supabase.ts`.
+- Supabase keys: use the **public** key only (`sb_publishable_…` publishable key
+  or the legacy anon JWT). Vite only exposes `VITE_`-prefixed variables, so set
+  `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (or
+  `VITE_SUPABASE_PUBLISHABLE_KEY`). **Never** use the secret key
+  (`sb_secret_…`) client-side — it bypasses RLS. Run `supabase/schema.sql` in the
+  project's SQL editor to create `works`, `reviews`, `site_meta` and the storage
+  bucket before edits can persist.
 - Disciplines (categories) are fully editable in the admin — add, rename,
   re-key or delete any of them, and each can hold any number of works. There is
   no cap on the number of works or gallery images per work. The Supabase
@@ -54,6 +85,9 @@ react-router-dom + Supabase + lucide-react.
 - Local dev in this environment may need `server.allowedHosts = true` in
   `vite.config.ts` when accessed through the proxied work host. That change is
   environment-specific — don't commit it unless the project wants it permanent.
-- The environment's `GITHUB_TOKEN` is an integration token with read-only
-  contents (`403 Resource not accessible by integration`). To push, use a PAT
-  with `Contents: write` for `NabeelMp/nabeel-mp`.
+- Pushing from this environment is currently blocked: the remote URL embeds a
+  `ghu_` token that GitHub rejects as `Bad credentials` ("Password
+  authentication is not supported for Git operations"), and the managed
+  `GITHUB_TOKEN` is empty here. The repo is public, so `git fetch`/`pull` work
+  anonymously, but `git push` needs a valid PAT (or SSH) with
+  `Contents: write` for `NabeelMp/nabeel-mp`.

@@ -9,9 +9,14 @@ import {
   type ReactNode,
 } from 'react'
 import type { Category } from './types'
+import { supabase } from './supabase'
 import { cacheGet, removeKey, saveKey } from './store'
 
 export const SITE_KEY = 'nabeel.site'
+
+/** Single row that holds the whole editable site document in Supabase. */
+const SITE_TABLE = 'site_meta'
+const SITE_ROW_ID = 'default'
 
 export interface ContactInfo {
   emails: string[]
@@ -116,7 +121,7 @@ export const defaultSite: SiteContent = {
     name: 'Muhammed Nabeel MP',
     sub: 'Designer · Storyteller',
     scrollLabel: 'Scroll',
-    profileImage: '/char/rig.webp',
+    profileImage: '/char/nabeel-full.png',
     realImage: '/me-original.jpg',
   },
   content: {
@@ -223,8 +228,37 @@ export function loadSite(): SiteContent {
   }
 }
 
+/**
+ * Loads the shared site document from Supabase (when configured). Falls back to
+ * the local copy so a network/backend hiccup never blanks the site.
+ */
+export async function loadSiteRemote(): Promise<SiteContent> {
+  if (!supabase) return loadSite()
+  try {
+    const { data, error } = await supabase.from(SITE_TABLE).select('content').eq('id', SITE_ROW_ID).maybeSingle()
+    if (!error && data?.content) {
+      const merged = merge(defaultSite, data.content)
+      saveKey(SITE_KEY, merged)
+      return merged
+    }
+  } catch {
+    /* fall through to the local copy */
+  }
+  return loadSite()
+}
+
 function persist(site: SiteContent) {
+  // Always keep a local copy (instant reads, offline fallback), and push to the
+  // shared backend when configured so every browser sees the same content.
   void saveKey(SITE_KEY, site)
+  if (supabase) {
+    void supabase
+      .from(SITE_TABLE)
+      .upsert({ id: SITE_ROW_ID, content: site, updated_at: new Date().toISOString() })
+      .then(({ error }) => {
+        if (error) console.warn('Site content could not be saved to Supabase:', error.message)
+      })
+  }
 }
 
 export interface SiteContextValue {
@@ -232,6 +266,8 @@ export interface SiteContextValue {
   save: (next: SiteContent) => void
   update: (patch: Partial<SiteContent>) => void
   reset: () => void
+  /** Re-reads the shared backend (no-op in demo mode) and adopts it. */
+  refreshFromRemote: () => Promise<void>
 }
 
 const SiteContext = createContext<SiteContextValue | null>(null)
@@ -255,6 +291,27 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   const reset = useCallback(() => {
     setSite(defaultSite)
     void removeKey(SITE_KEY)
+    if (supabase) {
+      void supabase
+        .from(SITE_TABLE)
+        .upsert({ id: SITE_ROW_ID, content: defaultSite, updated_at: new Date().toISOString() })
+        .then(({ error }) => {
+          if (error) console.warn('Site reset could not be saved to Supabase:', error.message)
+        })
+    }
+  }, [])
+
+  // Adopt the shared backend content once it resolves, so a visitor opening the
+  // site in any browser sees the latest edits (demo mode resolves immediately
+  // to the local copy).
+  const refreshFromRemote = useCallback(async () => {
+    const remote = await loadSiteRemote()
+    setSite(remote)
+  }, [])
+
+  useEffect(() => {
+    void refreshFromRemote()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Keep the document title/meta in sync with editable content.
@@ -265,8 +322,8 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   }, [site.siteTitle, site.metaDescription])
 
   const value = useMemo<SiteContextValue>(
-    () => ({ site, save, update, reset }),
-    [site, save, update, reset],
+    () => ({ site, save, update, reset, refreshFromRemote }),
+    [site, save, update, reset, refreshFromRemote],
   )
 
   return createElement(SiteContext.Provider, { value }, children)

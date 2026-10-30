@@ -71,7 +71,7 @@ export default function Hero() {
 
       {stage === 'character' && (
         <div className="absolute inset-x-0 bottom-3 flex justify-center sm:bottom-5">
-          <div className="aspect-[731/1537] h-[min(68svh,800px)] sm:h-[min(80svh,800px)] max-w-[94vw]">
+          <div className="aspect-[1080/1140] w-[min(92vw,640px)]">
             <Character enter chair snapSignal={snap} onArrive={() => setArrived(true)} src={site.hero.profileImage || undefined} className="h-full w-full" />
           </div>
         </div>

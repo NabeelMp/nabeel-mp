@@ -49,7 +49,7 @@ export default function About() {
               <div className="card absolute inset-0 overflow-hidden [backface-visibility:hidden]">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,90,31,.22),transparent_60%)]" />
                 <div className="absolute inset-x-0 bottom-0 top-[6%] flex justify-center">
-                  <div className="aspect-[731/1207] h-full">
+                  <div className="aspect-[1080/1140] h-full">
                     <Character idleMoves snapSignal={snap} src={site.hero.profileImage || undefined} className="h-full w-full" />
                   </div>
                 </div>
