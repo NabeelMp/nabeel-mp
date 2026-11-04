@@ -16,6 +16,8 @@ The admin panel saves globally only when Supabase is configured. Without it, the
 
 The schema is safe to run again after updates. Site copy and images edited in the admin panel are saved to the shared `site_settings` table; project records, reviews and uploaded media use the shared tables and `works` bucket.
 
+The Vite config also accepts the Supabase-Vercel integration's `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` names (plus `NEXT_PUBLIC_` variants). Only the public URL and publishable/anon key are included in the browser build; server secret keys are never exposed.
+
 Existing demo data in a browser's local storage is not automatically copied into Supabase. Export or copy that content before switching the site to shared storage.
 
 For local development, copy `.env.example` to `.env.local` and fill in the same two Supabase values. Never use a Supabase `service_role` key in the browser or in a `VITE_` variable.
