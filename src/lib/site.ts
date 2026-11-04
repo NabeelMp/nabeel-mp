@@ -117,7 +117,7 @@ export const defaultSite: SiteContent = {
     name: 'Muhammed Nabeel MP',
     sub: 'Designer · Storyteller',
     scrollLabel: 'Scroll',
-    profileImage: '/char/seated-portrait.png',
+    profileImage: '/char/seated-portrait-cutout-v2.png',
     realImage: '/me-original.jpg',
   },
   content: {
@@ -199,6 +199,14 @@ export const defaultSite: SiteContent = {
 const isObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v)
 
+function normalizePortrait(site: SiteContent): SiteContent {
+  const image = site.hero.profileImage
+  if (image === '/char/rig.webp' || image === '/char/seated-portrait.png' || image.startsWith('data:image/')) {
+    site.hero.profileImage = defaultSite.hero.profileImage
+  }
+  return site
+}
+
 /** Recursive merge so content saved by older versions still gains newly added fields. */
 function merge<T>(base: T, override: unknown): T {
   if (Array.isArray(base)) return (Array.isArray(override) ? override : base) as T
@@ -221,9 +229,7 @@ export function loadSite(): SiteContent {
     if (supabase) return defaultSite
     const raw = localStorage.getItem(SITE_KEY)
     if (!raw) return defaultSite
-    const site = merge(defaultSite, JSON.parse(raw))
-    if (site.hero.profileImage === '/char/rig.webp') site.hero.profileImage = defaultSite.hero.profileImage
-    return site
+    return normalizePortrait(merge(defaultSite, JSON.parse(raw)))
   } catch {
     return defaultSite
   }
@@ -269,8 +275,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
           return
         }
         if (data?.content) {
-          const shared = merge(defaultSite, data.content)
-          if (shared.hero.profileImage === '/char/rig.webp') shared.hero.profileImage = defaultSite.hero.profileImage
+          const shared = normalizePortrait(merge(defaultSite, data.content))
           setSite(shared)
           persist(shared)
         }
