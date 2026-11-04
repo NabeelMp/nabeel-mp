@@ -66,11 +66,6 @@ export default function WorkPage() {
           <Link to={`/projects/${cat.key}`} className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-bone/50 hover:text-ember">
             <ArrowLeft size={14} /> {cat.title}
           </Link>
-          {siblings.length > 1 && (
-            <span className="text-[11px] uppercase tracking-[0.3em] text-bone/40">
-              {String(i + 1).padStart(2, '0')} / {String(siblings.length).padStart(2, '0')}
-            </span>
-          )}
         </div>
 
         <header className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end">

@@ -7,6 +7,7 @@ import {
   Boxes,
   Briefcase,
   ExternalLink,
+  FileUp,
   KeyRound,
   Layers,
   LayoutDashboard,
@@ -38,7 +39,7 @@ import {
   SiteSettingsBar,
 } from '../components/admin/sections'
 import { EmptyState, Field, ImageInput, PasswordInput, Section, TextArea, TextInput, Toast } from '../components/admin/ui'
-import { createWork, deleteReview, deleteWork, listReviews, listWorks, uniqueSlug, updateWork } from '../lib/api'
+import { createWork, createWorks, deleteReview, deleteWork, listReviews, listWorks, uniqueSlug, updateWork } from '../lib/api'
 import { changeCredentials, DEFAULT_DEMO_CREDENTIALS, getDemoCredentials, resetDemoCredentials, signIn, signOut, useAdminSession, useAutoLock } from '../lib/auth'
 import { isSupabaseReady } from '../lib/supabase'
 import { useSite } from '../lib/site'
@@ -77,15 +78,6 @@ function Login() {
   const [p, setP] = useState('')
   const [err, setErr] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [showChange, setShowChange] = useState(false)
-
-  // Change-password state (available straight from the login screen).
-  const [cpUser, setCpUser] = useState('')
-  const [cpCurrent, setCpCurrent] = useState('')
-  const [cpNext, setCpNext] = useState('')
-  const [cpConfirm, setCpConfirm] = useState('')
-  const [cpMsg, setCpMsg] = useState<{ tone: 'ok' | 'err'; text: string } | null>(null)
-  const [cpBusy, setCpBusy] = useState(false)
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
@@ -97,27 +89,6 @@ function Login() {
       setErr(e instanceof Error ? e.message : 'Login failed')
     } finally {
       setBusy(false)
-    }
-  }
-
-  const submitChange = async (e: FormEvent) => {
-    e.preventDefault()
-    setCpMsg(null)
-    if (!cpNext || cpNext !== cpConfirm) {
-      setCpMsg({ tone: 'err', text: 'New password and confirmation do not match' })
-      return
-    }
-    setCpBusy(true)
-    try {
-      await changeCredentials({ username: isSupabaseReady ? undefined : cpUser || undefined, password: cpNext, current: cpCurrent || undefined })
-      setCpCurrent('')
-      setCpNext('')
-      setCpConfirm('')
-      setCpMsg({ tone: 'ok', text: 'Password updated — sign in with your new credentials.' })
-    } catch (e) {
-      setCpMsg({ tone: 'err', text: e instanceof Error ? e.message : 'Could not update password' })
-    } finally {
-      setCpBusy(false)
     }
   }
 
@@ -135,44 +106,7 @@ function Login() {
           <button className="btn-ember" disabled={busy}>
             {busy ? 'Signing in…' : 'Sign in'}
           </button>
-          {!isSupabaseReady && (
-            <button type="button" onClick={() => setShowChange((v) => !v)} className="text-xs text-bone/50 hover:text-ember">
-              {showChange ? '— Hide password options' : 'Change password'}
-            </button>
-          )}
-          {!isSupabaseReady && (
-            <p className="text-xs text-bone/40">
-              Demo mode — sign in with <span className="text-bone">{DEFAULT_DEMO_CREDENTIALS.username}</span> / <span className="text-bone">{DEFAULT_DEMO_CREDENTIALS.password}</span>
-            </p>
-          )}
         </form>
-
-        {!isSupabaseReady && showChange && (
-          <motion.form
-            onSubmit={submitChange}
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="grid gap-3 overflow-hidden border-t border-line/10 pt-4"
-          >
-            <p className="eyebrow">Change password</p>
-            <Field label="Username" hint="Leave blank to keep the current one.">
-              <TextInput value={cpUser} onChange={setCpUser} placeholder={getDemoCredentials().username} />
-            </Field>
-            <Field label="Current password">
-              <PasswordInput value={cpCurrent} onChange={setCpCurrent} autoComplete="current-password" />
-            </Field>
-            <Field label="New password">
-              <PasswordInput value={cpNext} onChange={setCpNext} autoComplete="new-password" />
-            </Field>
-            <Field label="Confirm new password">
-              <PasswordInput value={cpConfirm} onChange={setCpConfirm} autoComplete="new-password" />
-            </Field>
-            {cpMsg && <p className={`text-sm ${cpMsg.tone === 'ok' ? 'text-lime' : 'text-ember'}`}>{cpMsg.text}</p>}
-            <button className="btn-ghost w-fit" disabled={cpBusy}>
-              <KeyRound size={15} /> {cpBusy ? 'Updating…' : 'Update password'}
-            </button>
-          </motion.form>
-        )}
 
         <Link to="/" className="text-center text-xs text-bone/40 hover:text-ember">
           ← Back to site
@@ -198,6 +132,26 @@ const emptyWork = {
 }
 
 type WorkDraft = typeof emptyWork
+
+function parseCsv(text: string): string[][] {
+  const rows: string[][] = []
+  let row: string[] = []
+  let cell = ''
+  let quoted = false
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i]
+    if (char === '"' && quoted && text[i + 1] === '"') { cell += '"'; i += 1 }
+    else if (char === '"') quoted = !quoted
+    else if (char === ',' && !quoted) { row.push(cell.trim()); cell = '' }
+    else if ((char === '\n' || char === '\r') && !quoted) {
+      if (char === '\r' && text[i + 1] === '\n') i += 1
+      row.push(cell.trim()); if (row.some(Boolean)) rows.push(row)
+      row = []; cell = ''
+    } else cell += char
+  }
+  row.push(cell.trim()); if (row.some(Boolean)) rows.push(row)
+  return rows
+}
 
 const toDraft = (w: Work): WorkDraft => ({
   title: w.title,
@@ -281,6 +235,7 @@ function WorksTab({ onToast }: { onToast: (m: string) => void }) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [status, setStatus] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [importBusy, setImportBusy] = useState(false)
 
   const reload = () => listWorks().then(setWorks).catch(console.error)
   useEffect(() => {
@@ -288,6 +243,45 @@ function WorksTab({ onToast }: { onToast: (m: string) => void }) {
   }, [])
 
   const shown = filter === 'all' ? works : works.filter((w) => w.category === filter)
+
+  const importCsv = async (file?: File) => {
+    if (!file) return
+    setImportBusy(true)
+    setStatus(null)
+    try {
+      const [headerRow, ...rows] = parseCsv(await file.text())
+      const headers = (headerRow ?? []).map((h) => h.toLowerCase().replace(/[^a-z0-9]+/g, '_'))
+      const column = (r: string[], name: string) => r[headers.indexOf(name)]?.trim() ?? ''
+      const taken = new Map<string, Set<string>>()
+      for (const work of works) {
+        if (!taken.has(work.category)) taken.set(work.category, new Set())
+        taken.get(work.category)!.add(work.slug)
+      }
+      const imported: NewWork[] = rows.map((r) => {
+        const category = column(r, 'category') as CategoryKey
+        if (!column(r, 'title')) throw new Error('Every row needs a title.')
+        if (!site.categories.some((c) => c.key === category)) throw new Error(`Unknown category "${category}". Use a category key from the site.`)
+        const slugs = taken.get(category) ?? new Set<string>()
+        const slug = uniqueSlug(column(r, 'slug') || column(r, 'title'), slugs)
+        slugs.add(slug); taken.set(category, slugs)
+        return {
+          title: column(r, 'title'), slug, category,
+          client: column(r, 'client') || null, year: column(r, 'year') || null,
+          summary: column(r, 'summary') || null, description: column(r, 'description') || null,
+          video_url: column(r, 'video_url') || null, cover_url: column(r, 'cover_url') || null,
+          tags: (column(r, 'tags') || '').split('|').map((t) => t.trim()).filter(Boolean),
+          gallery: (column(r, 'gallery') || '').split('|').map((g) => g.trim()).filter(Boolean),
+        }
+      })
+      await createWorks(imported)
+      await reload()
+      onToast(`${imported.length} projects imported ✓`)
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'Could not import CSV')
+    } finally {
+      setImportBusy(false)
+    }
+  }
 
   const startNew = () => {
     setDraft({ ...emptyWork, category: site.categories[0]?.key ?? 'branding' })
@@ -352,9 +346,15 @@ function WorksTab({ onToast }: { onToast: (m: string) => void }) {
         hint="Add, edit or remove portfolio works."
         aside={
           mode === 'list' ? (
-            <button onClick={startNew} className="btn-ember !px-4 !py-2 !text-xs">
-              <Plus size={14} /> New project
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <label className="btn-ghost !px-4 !py-2 !text-xs cursor-pointer">
+                <FileUp size={14} /> {importBusy ? 'Importing…' : 'Import CSV'}
+                <input type="file" accept=".csv,text/csv" className="hidden" disabled={importBusy} onChange={(e) => { void importCsv(e.target.files?.[0]); e.target.value = '' }} />
+              </label>
+              <button onClick={startNew} className="btn-ember !px-4 !py-2 !text-xs">
+                <Plus size={14} /> New project
+              </button>
+            </div>
           ) : (
             <button onClick={() => setMode('list')} className="btn-ghost !px-4 !py-2 !text-xs">
               Back to list
@@ -364,6 +364,8 @@ function WorksTab({ onToast }: { onToast: (m: string) => void }) {
       >
         {mode === 'list' ? (
           <>
+            <p className="text-xs text-bone/45">Import a CSV with columns: title, category, client, year, summary, description, video_url, cover_url, tags and gallery. Separate multiple tags or gallery URLs with |. No app-level row limit.</p>
+            {status && <p className="text-sm text-ember">{status}</p>}
             <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
               {(['all', ...site.categories.map((c) => c.key)] as (CategoryKey | 'all')[]).map((k) => (
                 <button key={k} onClick={() => setFilter(k)} className={`chip shrink-0 ${filter === k ? 'border-ember text-ember' : ''}`}>

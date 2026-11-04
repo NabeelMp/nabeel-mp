@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import Character from './Character'
+import SeatedPortrait from './SeatedPortrait'
 import { useSnapScroll } from '../hooks/useSnapScroll'
 import { useSite } from '../lib/site'
 
@@ -10,16 +10,18 @@ export default function Hero() {
   const ref = useRef<HTMLElement>(null)
   const [stage, setStage] = useState<'intro' | 'character'>('intro')
   const [arrived, setArrived] = useState(false)
-  const [snap, setSnap] = useState(0)
-  useSnapScroll(ref, 'about', useCallback(() => setSnap((s) => s + 1), []))
+  useSnapScroll(ref, 'about', useCallback(() => {}, []))
 
   useEffect(() => {
     const t = setTimeout(() => setStage('character'), 2500)
-    return () => clearTimeout(t)
+    const arrivedTimer = setTimeout(() => setArrived(true), 3850)
+    return () => { clearTimeout(t); clearTimeout(arrivedTimer) }
   }, [])
 
   return (
-    <section id="home" ref={ref} className="grain relative h-[100svh] min-h-[560px] overflow-hidden bg-ink">
+    <section id="home" ref={ref} className="grain relative h-[100svh] min-h-[560px] overflow-hidden bg-ink [background:radial-gradient(ellipse_at_50%_100%,rgba(255,90,31,.16),transparent_47%),radial-gradient(ellipse_at_50%_55%,#24201f_0%,#111010_53%,#080808_100%)]">
+      <div className="pointer-events-none absolute inset-x-[10%] bottom-0 h-[52%] rounded-[50%_50%_0_0] border-x border-t border-bone/[0.04] bg-[linear-gradient(180deg,rgba(255,255,255,.025),transparent_38%)] [transform:perspective(900px)_rotateX(8deg)]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/50 to-transparent" />
       <motion.div
         className="pointer-events-none absolute left-1/2 top-[42%] h-[55vmin] w-[95vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-ember/25 blur-[120px]"
         initial={{ opacity: 0, scale: 0.5 }}
@@ -71,8 +73,8 @@ export default function Hero() {
 
       {stage === 'character' && (
         <div className="absolute inset-x-0 bottom-3 flex justify-center sm:bottom-5">
-          <div className="aspect-[731/1537] h-[min(68svh,800px)] sm:h-[min(80svh,800px)] max-w-[94vw]">
-            <Character enter chair snapSignal={snap} onArrive={() => setArrived(true)} src={site.hero.profileImage || undefined} className="h-full w-full" />
+          <div className="relative aspect-[2/3] h-[min(68svh,800px)] sm:h-[min(80svh,800px)] max-w-[94vw]">
+            <SeatedPortrait entrance />
           </div>
         </div>
       )}

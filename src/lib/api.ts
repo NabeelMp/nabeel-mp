@@ -49,6 +49,18 @@ export async function createWork(work: NewWork): Promise<Work> {
   return created
 }
 
+/** Create a batch of works in one database request (or one local write). */
+export async function createWorks(works: NewWork[]): Promise<void> {
+  if (works.length === 0) return
+  if (supabase) {
+    const { error } = await supabase.from('works').insert(works)
+    if (error) throw error
+    return
+  }
+  const created = works.map((work) => ({ ...work, id: uid(), created_at: new Date().toISOString() }))
+  write(LS_WORKS, [...created, ...read<Work[]>(LS_WORKS, seedWorks)])
+}
+
 export async function updateWork(id: string, patch: Partial<NewWork>): Promise<Work> {
   if (supabase) {
     const { data, error } = await supabase.from('works').update(patch).eq('id', id).select().single()

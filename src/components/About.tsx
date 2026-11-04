@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { animate, motion, useInView } from 'framer-motion'
-import Character from './Character'
+import SeatedPortrait from './SeatedPortrait'
 import { Reveal, SplitWords } from './Reveal'
 import { useSnapScroll } from '../hooks/useSnapScroll'
 import { useSite } from '../lib/site'
@@ -21,16 +21,15 @@ export default function About() {
   const profile = site.profile
   const about = site.content.about
   const ref = useRef<HTMLElement>(null)
-  const [snap, setSnap] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [photoOk, setPhotoOk] = useState(true)
   useSnapScroll(ref, 'what-i-do', useCallback(() => {
     setFlipped(false)
-    setSnap((s) => s + 1)
   }, []))
 
   return (
-    <section id="about" ref={ref} className="relative flex min-h-[100svh] items-center overflow-hidden bg-ink py-24 sm:py-28">
+    <section id="about" ref={ref} className="relative flex min-h-[100svh] items-center overflow-hidden bg-ink py-24 sm:py-28 [background:radial-gradient(ellipse_at_16%_50%,rgba(255,90,31,.12),transparent_45%),radial-gradient(ellipse_at_84%_35%,rgba(215,255,58,.045),transparent_38%),linear-gradient(145deg,#171514,#090909_65%)]">
+      <div className="pointer-events-none absolute inset-x-[8%] top-[16%] h-[72%] rounded-[50%] border border-bone/[0.035] bg-[linear-gradient(120deg,rgba(255,255,255,.02),transparent_55%)] [transform:perspective(1000px)_rotateY(-5deg)]" />
       <div className="pointer-events-none absolute -left-40 top-1/3 h-96 w-96 rounded-full bg-ember/10 blur-[120px]" />
       <div className="container-x grid items-center gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-20">
         <Reveal className="mx-auto w-full max-w-[420px]">
@@ -49,8 +48,8 @@ export default function About() {
               <div className="card absolute inset-0 overflow-hidden [backface-visibility:hidden]">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,90,31,.22),transparent_60%)]" />
                 <div className="absolute inset-x-0 bottom-0 top-[6%] flex justify-center">
-                  <div className="aspect-[731/1207] h-full">
-                    <Character idleMoves snapSignal={snap} src={site.hero.profileImage || undefined} className="h-full w-full" />
+                  <div className="h-full w-full px-2 pt-5">
+                    <SeatedPortrait />
                   </div>
                 </div>
                 <span className="chip absolute left-4 top-4 bg-ink/60 backdrop-blur">{about.hoverHint}</span>
