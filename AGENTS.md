@@ -13,8 +13,8 @@ react-router-dom + Supabase + lucide-react.
   (profile, hero, categories, contact, footer). Categories drive the
   Projects section; `key` is the URL slug, `title` is the displayed label.
 - `src/lib/auth.ts` — admin auth. Supabase mode when `VITE_SUPABASE_URL` is
-  set; otherwise demo mode with `admin`/`admin`. The default pair is always a
-  valid master fallback so changing the demo password cannot lock the owner out.
+  set; otherwise demo mode starts with `admin`/`admin` until the local demo
+  credentials are changed. There is no master-password fallback.
 - `src/pages/Admin.tsx` — admin panel (login + tabs).
 - `src/components/Contact.tsx` — footer + contact section. Footer holds the
   admin lock link; the "Start a project" CTA is a mailto with both contact

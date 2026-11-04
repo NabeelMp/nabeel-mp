@@ -78,11 +78,7 @@ export async function signIn(username: string, password: string) {
   if (!supabase) {
     const creds = getDemoCredentials()
     const u = username.trim()
-    // The default admin/admin pair always works as a master fallback, so
-    // changing the demo password can never lock the owner out of the panel.
-    const isDefault = u === DEFAULT_DEMO_CREDENTIALS.username && password === DEFAULT_DEMO_CREDENTIALS.password
-    const isCustom = u === creds.username && password === creds.password
-    if (isDefault || isCustom) {
+    if (u === creds.username && password === creds.password) {
       sessionStorage.setItem(DEMO_SESSION_KEY, '1')
       emitDemo()
       return
@@ -139,7 +135,7 @@ export function useAutoLock(isAdmin: boolean) {
 export async function changeCredentials(next: { username?: string; password: string; current?: string }): Promise<void> {
   if (!supabase) {
     const creds = getDemoCredentials()
-    if (next.current && next.current !== creds.password) throw new Error('Current password is incorrect')
+    if (!next.current || next.current !== creds.password) throw new Error('Current password is incorrect')
     const username = (next.username ?? creds.username).trim()
     if (!username) throw new Error('Username cannot be empty')
     if (next.password.length < 4) throw new Error('Password must be at least 4 characters')

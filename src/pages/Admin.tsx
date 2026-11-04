@@ -518,7 +518,7 @@ function SecurityTab({ onToast }: { onToast: (m: string) => void }) {
         </form>
       </Section>
 
-      <Section title="Session & recovery" hint="Sign out or restore the default demo login (admin / admin always works).">
+      <Section title="Session & recovery" hint="Sign out or reset the demo login to its original credentials.">
         <div className="grid gap-3">
           <button onClick={signOut} className="btn-ghost w-fit">
             <LogOut size={15} /> Sign out
