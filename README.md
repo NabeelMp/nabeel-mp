@@ -11,7 +11,7 @@ The admin panel saves globally only when Supabase is configured. Without it, the
 3. Run [`supabase/schema.sql`](supabase/schema.sql) in the Supabase SQL Editor. It creates the tables and storage bucket and grants admin access to that email. Run [`supabase/seed.sql`](supabase/seed.sql) if you want the starter projects and reviews.
 4. In Vercel, open the portfolio project settings and add these environment variables for Production (and Preview if needed):
    - `VITE_SUPABASE_URL` — the Supabase project URL
-   - `VITE_SUPABASE_ANON_KEY` — the project's publishable/anon key
+   - `VITE_SUPABASE_PUBLISHABLE_KEY` — the project's publishable key (or the older `VITE_SUPABASE_ANON_KEY`)
 5. Redeploy the Vercel project. Sign in through `/admin` using the Supabase admin account.
 
 The schema is safe to run again after updates. Site copy and images edited in the admin panel are saved to the shared `site_settings` table; project records, reviews and uploaded media use the shared tables and `works` bucket.
