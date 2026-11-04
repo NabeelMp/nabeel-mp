@@ -1,32 +1,29 @@
-# React + TypeScript + Vite
+# Nabeel portfolio
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React 19, TypeScript, Vite, Tailwind, Framer Motion and Supabase.
 
-Currently, two official plugins are available:
+## Shared admin content
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The admin panel saves globally only when Supabase is configured. Without it, the site runs in local demo mode and saves projects, reviews, uploads and site edits in that browser's `localStorage`.
 
-## React Compiler
+1. Create a Supabase project.
+2. In Supabase Authentication, create the admin user `nabeelmp3506@gmail.com`.
+3. Run [`supabase/schema.sql`](supabase/schema.sql) in the Supabase SQL Editor. It creates the tables and storage bucket and grants admin access to that email. Run [`supabase/seed.sql`](supabase/seed.sql) if you want the starter projects and reviews.
+4. In Vercel, open the portfolio project settings and add these environment variables for Production (and Preview if needed):
+   - `VITE_SUPABASE_URL` — the Supabase project URL
+   - `VITE_SUPABASE_ANON_KEY` — the project's publishable/anon key
+5. Redeploy the Vercel project. Sign in through `/admin` using the Supabase admin account.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The schema is safe to run again after updates. Site copy and images edited in the admin panel are saved to the shared `site_settings` table; project records, reviews and uploaded media use the shared tables and `works` bucket.
 
-## Expanding the Oxlint configuration
+Existing demo data in a browser's local storage is not automatically copied into Supabase. Export or copy that content before switching the site to shared storage.
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+For local development, copy `.env.example` to `.env.local` and fill in the same two Supabase values. Never use a Supabase `service_role` key in the browser or in a `VITE_` variable.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+## Commands
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+- `npm run dev` — start the Vite development server
+- `npm run build` — type-check and build the production site
+- `npm run lint` — run Oxlint
+
+Vercel's [`vercel.json`](vercel.json) rewrites client-side routes such as `/admin` to the SPA entry point.

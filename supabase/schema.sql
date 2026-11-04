@@ -40,9 +40,16 @@ create table if not exists public.reviews (
 );
 create index if not exists reviews_work_id_idx on public.reviews(work_id);
 
+create table if not exists public.site_settings (
+  id text primary key check (id = 'portfolio'),
+  content jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
 alter table public.admins enable row level security;
 alter table public.works enable row level security;
 alter table public.reviews enable row level security;
+alter table public.site_settings enable row level security;
 
 drop policy if exists "admins self read" on public.admins;
 create policy "admins self read" on public.admins for select using (user_id = auth.uid());
@@ -58,6 +65,11 @@ drop policy if exists "reviews public insert" on public.reviews;
 create policy "reviews public insert" on public.reviews for insert with check (work_id is not null);
 drop policy if exists "reviews admin delete" on public.reviews;
 create policy "reviews admin delete" on public.reviews for delete using (public.is_admin());
+
+drop policy if exists "site settings public read" on public.site_settings;
+create policy "site settings public read" on public.site_settings for select using (true);
+drop policy if exists "site settings admin write" on public.site_settings;
+create policy "site settings admin write" on public.site_settings for all using (public.is_admin()) with check (public.is_admin());
 
 insert into storage.buckets (id, name, public) values ('works', 'works', true)
 on conflict (id) do update set public = true;

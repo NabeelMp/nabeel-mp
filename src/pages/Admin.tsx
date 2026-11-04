@@ -626,6 +626,7 @@ function Dashboard({ go }: { go: (t: Tab) => void }) {
 
 export default function Admin() {
   const session = useAdminSession()
+  const { syncStatus } = useSite()
   const [tab, setTab] = useState<Tab>('dashboard')
   const [toast, setToast] = useState<string | null>(null)
   const [navOpen, setNavOpen] = useState(false)
@@ -678,6 +679,16 @@ export default function Admin() {
       </header>
 
       <div className="mx-auto grid w-full max-w-[1500px] gap-8 px-4 py-6 sm:px-8 sm:py-8 lg:grid-cols-[248px_minmax(0,1fr)]">
+        {(!isSupabaseReady || syncStatus === 'error') && (
+          <div className="rounded-2xl border border-ember/35 bg-ember/10 px-5 py-4 text-sm text-bone/80 lg:col-span-2">
+            <p className="font-semibold text-ember">{!isSupabaseReady ? 'Changes are saved only in this browser' : 'Shared database needs attention'}</p>
+            <p className="mt-1 text-xs leading-relaxed text-bone/65">
+              {!isSupabaseReady
+                ? 'Projects, uploads and site edits are not shared across browsers yet. Connect Supabase in the Vercel project and run supabase/schema.sql to enable shared updates.'
+                : 'The shared site settings could not be loaded or saved. Check the Supabase project configuration and schema.'}
+            </p>
+          </div>
+        )}
         {/* Sidebar */}
         <aside className={`${navOpen ? 'block' : 'hidden'} lg:block`}>
           <nav className="grid gap-6 lg:sticky lg:top-24">

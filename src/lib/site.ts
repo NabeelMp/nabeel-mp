@@ -5,10 +5,12 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
 import type { Category } from './types'
+import { supabase } from './supabase'
 
 export const SITE_KEY = 'nabeel.site'
 
@@ -115,7 +117,7 @@ export const defaultSite: SiteContent = {
     name: 'Muhammed Nabeel MP',
     sub: 'Designer · Storyteller',
     scrollLabel: 'Scroll',
-    profileImage: '/char/rig.webp',
+    profileImage: '/char/seated-portrait.png',
     realImage: '/me-original.jpg',
   },
   content: {
@@ -215,8 +217,13 @@ function merge<T>(base: T, override: unknown): T {
 export function loadSite(): SiteContent {
   if (typeof window === 'undefined') return defaultSite
   try {
+    // In cloud mode the shared database is authoritative; don't seed it from one browser's cache.
+    if (supabase) return defaultSite
     const raw = localStorage.getItem(SITE_KEY)
-    return raw ? merge(defaultSite, JSON.parse(raw)) : defaultSite
+    if (!raw) return defaultSite
+    const site = merge(defaultSite, JSON.parse(raw))
+    if (site.hero.profileImage === '/char/rig.webp') site.hero.profileImage = defaultSite.hero.profileImage
+    return site
   } catch {
     return defaultSite
   }
@@ -232,6 +239,7 @@ function persist(site: SiteContent) {
 
 export interface SiteContextValue {
   site: SiteContent
+  syncStatus: 'local-only' | 'loading' | 'shared' | 'error'
   save: (next: SiteContent) => void
   update: (patch: Partial<SiteContent>) => void
   reset: () => void
@@ -241,19 +249,75 @@ const SiteContext = createContext<SiteContextValue | null>(null)
 
 export function SiteProvider({ children }: { children: ReactNode }) {
   const [site, setSite] = useState<SiteContent>(() => loadSite())
+  const [syncStatus, setSyncStatus] = useState<SiteContextValue['syncStatus']>(supabase ? 'loading' : 'local-only')
+  const sharedSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const sharedSaveQueue = useRef<Promise<void>>(Promise.resolve())
+
+  useEffect(() => {
+    if (!supabase) return
+    let active = true
+    void supabase
+      .from('site_settings')
+      .select('content')
+      .eq('id', 'portfolio')
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!active) return
+        if (error) {
+          console.error('Could not load shared site settings:', error.message)
+          setSyncStatus('error')
+          return
+        }
+        if (data?.content) {
+          const shared = merge(defaultSite, data.content)
+          if (shared.hero.profileImage === '/char/rig.webp') shared.hero.profileImage = defaultSite.hero.profileImage
+          setSite(shared)
+          persist(shared)
+        }
+        setSyncStatus('shared')
+      })
+    return () => { active = false }
+  }, [])
+
+  const persistShared = useCallback((next: SiteContent) => {
+    if (!supabase) {
+      setSyncStatus('local-only')
+      return
+    }
+    const client = supabase
+    if (sharedSaveTimer.current) clearTimeout(sharedSaveTimer.current)
+    setSyncStatus('loading')
+    sharedSaveTimer.current = setTimeout(() => {
+      sharedSaveQueue.current = sharedSaveQueue.current
+        .catch(() => undefined)
+        .then(async () => {
+          const { error } = await client
+            .from('site_settings')
+            .upsert({ id: 'portfolio', content: next, updated_at: new Date().toISOString() })
+          if (error) {
+            console.error('Could not save shared site settings:', error.message)
+            setSyncStatus('error')
+          } else {
+            setSyncStatus('shared')
+          }
+        })
+    }, 500)
+  }, [])
 
   const save = useCallback((next: SiteContent) => {
     setSite(next)
     persist(next)
-  }, [])
+    persistShared(next)
+  }, [persistShared])
 
   const update = useCallback((patch: Partial<SiteContent>) => {
     setSite((prev) => {
       const next = { ...prev, ...patch }
       persist(next)
+      persistShared(next)
       return next
     })
-  }, [])
+  }, [persistShared])
 
   const reset = useCallback(() => {
     setSite(defaultSite)
@@ -262,7 +326,8 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     } catch {
       /* ignore */
     }
-  }, [])
+    persistShared(defaultSite)
+  }, [persistShared])
 
   // Keep the document title/meta in sync with editable content.
   useEffect(() => {
@@ -272,8 +337,8 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   }, [site.siteTitle, site.metaDescription])
 
   const value = useMemo<SiteContextValue>(
-    () => ({ site, save, update, reset }),
-    [site, save, update, reset],
+    () => ({ site, syncStatus, save, update, reset }),
+    [site, syncStatus, save, update, reset],
   )
 
   return createElement(SiteContext.Provider, { value }, children)
