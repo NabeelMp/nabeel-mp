@@ -14,7 +14,7 @@ export default function Hero() {
 
   useEffect(() => {
     const t = setTimeout(() => setStage('character'), 2500)
-    const arrivedTimer = setTimeout(() => setArrived(true), 3850)
+    const arrivedTimer = setTimeout(() => setArrived(true), 2950)
     return () => { clearTimeout(t); clearTimeout(arrivedTimer) }
   }, [])
 
@@ -29,12 +29,12 @@ export default function Hero() {
         transition={{ duration: 2.6, ease: 'easeOut' }}
       />
 
-      <div className="absolute inset-x-0 top-[16%] flex justify-center sm:top-[12%]">
-        <motion.h1
-          aria-label="Portfolio"
-          className="font-tall text-glow flex select-none leading-none text-bone"
+      <div className="pointer-events-none absolute inset-x-0 top-[15%] z-0 flex justify-center sm:top-[12%]">
+        <motion.p
+          aria-hidden="true"
+          className="font-tall flex select-none leading-none text-bone/35"
           style={{ fontSize: 'clamp(4.5rem, 21vw, 22rem)', letterSpacing: '0.01em' }}
-          animate={stage === 'character' ? { opacity: 0.92, scale: 0.97 } : {}}
+          animate={stage === 'character' ? { opacity: 0.45, scale: 0.96 } : {}}
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
         >
           {WORD.map((l, i) => (
@@ -49,11 +49,11 @@ export default function Hero() {
               {l}
             </motion.span>
           ))}
-        </motion.h1>
+        </motion.p>
       </div>
 
       <motion.div
-        className="absolute left-5 top-6 flex items-center gap-2 sm:left-10 sm:top-8"
+        className="absolute left-5 top-6 z-20 flex items-center gap-2 sm:left-10 sm:top-8"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.6 }}
@@ -62,7 +62,7 @@ export default function Hero() {
         <span className="text-[11px] font-bold tracking-[0.4em]">{site.hero.eyebrow}</span>
       </motion.div>
       <motion.div
-        className="absolute right-5 top-6 hidden text-right text-[10px] font-semibold uppercase tracking-[0.3em] text-bone/50 sm:right-10 sm:top-8 sm:block"
+        className="absolute right-5 top-6 z-20 hidden text-right text-[10px] font-semibold uppercase tracking-[0.3em] text-bone/50 sm:right-10 sm:top-8 sm:block"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.8 }}
@@ -72,7 +72,7 @@ export default function Hero() {
       </motion.div>
 
       {stage === 'character' && (
-        <div className="absolute inset-x-0 bottom-3 flex justify-center sm:bottom-5">
+        <div className="absolute inset-x-0 bottom-3 z-10 flex justify-center sm:bottom-5">
           <div className="relative aspect-[2/3] h-[min(68svh,800px)] sm:h-[min(80svh,800px)] max-w-[94vw]">
             <SeatedPortrait entrance />
           </div>
@@ -80,16 +80,18 @@ export default function Hero() {
       )}
 
       <motion.div
-        className="absolute bottom-6 left-5 max-w-[42vw] sm:bottom-10 sm:left-10"
+        className="absolute left-5 top-[24%] z-20 max-w-[78vw] sm:left-[8%] sm:top-[34%] sm:max-w-[27vw]"
         initial={{ opacity: 0, y: 20 }}
         animate={arrived ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8 }}
       >
-        <p className="font-display text-2xl leading-none sm:text-4xl">{site.hero.name}</p>
-        <p className="mt-1 text-[10px] uppercase tracking-[0.3em] text-bone/50 sm:text-[11px]">{site.hero.sub}</p>
+        <h1 className="font-display text-[clamp(2.25rem,4.6vw,4.75rem)] font-medium leading-[0.9] tracking-[-0.045em] text-bone">
+          {site.hero.name}
+        </h1>
+        <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.28em] text-ember sm:mt-4 sm:text-xs">{site.hero.sub}</p>
       </motion.div>
       <motion.div
-        className="absolute bottom-6 right-5 flex flex-col items-center gap-2 sm:bottom-10 sm:right-10"
+        className="absolute bottom-6 right-5 z-20 flex flex-col items-center gap-2 sm:bottom-10 sm:right-10"
         initial={{ opacity: 0 }}
         animate={arrived ? { opacity: 1 } : {}}
         transition={{ delay: 0.6 }}
