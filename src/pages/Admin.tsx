@@ -40,7 +40,7 @@ import {
 import { EmptyState, Field, ImageInput, PasswordInput, Section, TextArea, TextInput, Toast } from '../components/admin/ui'
 import { createWork, createWorks, deleteReview, deleteWork, listReviews, listWorks, uniqueSlug, updateWork } from '../lib/api'
 import { changeCredentials, getDemoCredentials, resetDemoCredentials, signIn, signOut, useAdminSession, useAutoLock } from '../lib/auth'
-import { isSupabaseReady } from '../lib/supabase'
+import { isSupabaseReady, supabase } from '../lib/supabase'
 import { useSite } from '../lib/site'
 import type { CategoryKey, NewWork, Review, Work } from '../lib/types'
 
@@ -75,8 +75,23 @@ const NAV: { group: string; items: { key: Tab; label: string; icon: typeof Layou
 function Login() {
   const [u, setU] = useState('')
   const [p, setP] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [mode, setMode] = useState<'login' | 'forgot' | 'recovery'>(() => {
+    const query = new URLSearchParams(window.location.search)
+    const hash = new URLSearchParams(window.location.hash.slice(1))
+    return query.has('code') || hash.get('type') === 'recovery' ? 'recovery' : 'login'
+  })
   const [err, setErr] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    if (!supabase) return
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') setMode('recovery')
+    })
+    return () => data.subscription.unsubscribe()
+  }, [])
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
@@ -91,21 +106,104 @@ function Login() {
     }
   }
 
+  const sendRecovery = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!supabase) return
+    setBusy(true)
+    setErr(null)
+    setNotice(null)
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(u.trim(), {
+        redirectTo: `${window.location.origin}/admin`,
+      })
+      if (error) throw error
+      setNotice('If an account exists for that email, a password reset link has been sent. Check your inbox and spam folder.')
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Could not send a reset email')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const updatePassword = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!supabase) return
+    setErr(null)
+    setNotice(null)
+    if (p.length < 8) {
+      setErr('Use a password with at least 8 characters.')
+      return
+    }
+    if (p !== confirmPassword) {
+      setErr('New password and confirmation do not match.')
+      return
+    }
+    setBusy(true)
+    try {
+      const { error } = await supabase.auth.updateUser({ password: p })
+      if (error) throw error
+      window.history.replaceState({}, document.title, window.location.pathname)
+      setP('')
+      setConfirmPassword('')
+      setMode('login')
+      setNotice('Password updated. Sign in with your new password.')
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Could not update password')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const recoveryMode = mode === 'forgot' || mode === 'recovery'
+  const submitHandler = mode === 'forgot' ? sendRecovery : mode === 'recovery' ? updatePassword : submit
+
   return (
     <div className="grid min-h-screen place-items-center bg-ink p-6">
       <div className="card grid w-full max-w-sm gap-4 p-8">
-        <form onSubmit={submit} className="grid gap-4">
+        <form onSubmit={submitHandler} className="grid gap-4">
           <div>
             <p className="eyebrow">Restricted</p>
-            <h1 className="mt-2 font-display text-5xl">Admin</h1>
+            <h1 className="mt-2 font-display text-5xl">{mode === 'forgot' ? 'Reset password' : mode === 'recovery' ? 'Choose a password' : 'Admin'}</h1>
           </div>
-          <input className="input" placeholder={isSupabaseReady ? 'Email' : 'Username'} value={u} onChange={(e) => setU(e.target.value)} autoComplete="username" required />
-          <PasswordInput value={p} onChange={setP} placeholder="Password" autoComplete="current-password" />
+          {mode !== 'recovery' && (
+            <input
+              className="input"
+              type={isSupabaseReady ? 'email' : 'text'}
+              placeholder={isSupabaseReady ? 'Email' : 'Username'}
+              value={u}
+              onChange={(e) => setU(e.target.value)}
+              autoComplete={isSupabaseReady ? 'email' : 'username'}
+              required
+            />
+          )}
+          {mode !== 'forgot' && (
+            <PasswordInput
+              value={p}
+              onChange={setP}
+              placeholder={mode === 'recovery' ? 'New password (8+ characters)' : 'Password'}
+              autoComplete={mode === 'recovery' ? 'new-password' : 'current-password'}
+            />
+          )}
+          {mode === 'recovery' && (
+            <PasswordInput value={confirmPassword} onChange={setConfirmPassword} placeholder="Confirm new password" autoComplete="new-password" />
+          )}
           {err && <p className="text-sm text-ember">{err}</p>}
+          {notice && <p className="text-sm text-bone/70">{notice}</p>}
           <button className="btn-ember" disabled={busy}>
-            {busy ? 'Signing in…' : 'Sign in'}
+            {busy ? 'Please wait…' : mode === 'forgot' ? 'Send reset link' : mode === 'recovery' ? 'Update password' : 'Sign in'}
           </button>
         </form>
+
+        {mode === 'login' && isSupabaseReady && (
+          <button type="button" onClick={() => { setErr(null); setNotice(null); setMode('forgot') }} className="w-full text-center text-xs text-ember hover:text-bone">
+            Forgot password?
+          </button>
+        )}
+        {recoveryMode && (
+          <button type="button" onClick={() => { setErr(null); setNotice(null); setMode('login') }} className="w-full text-center text-xs text-bone/40 hover:text-ember">
+            ← Back to sign in
+          </button>
+        )}
 
         <Link to="/" className="text-center text-xs text-bone/40 hover:text-ember">
           ← Back to site
@@ -635,6 +733,12 @@ export default function Admin() {
     setTab(t)
     setNavOpen(false)
   }
+
+  const authQuery = new URLSearchParams(window.location.search)
+  const authHash = new URLSearchParams(window.location.hash.slice(1))
+  const isRecoveryRedirect = authQuery.has('code') || authHash.get('type') === 'recovery'
+
+  if (isSupabaseReady && isRecoveryRedirect) return <Login />
 
   if (session.loading) return <div className="grid min-h-screen place-items-center text-bone/50">Loading…</div>
   if (!session.isAdmin)
