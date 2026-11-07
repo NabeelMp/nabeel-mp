@@ -20,7 +20,13 @@ export default function Hero() {
 
   return (
     <section id="home" ref={ref} className="grain relative h-[100svh] min-h-[560px] overflow-hidden bg-ink [background:radial-gradient(ellipse_at_50%_100%,rgba(255,90,31,.16),transparent_47%),radial-gradient(ellipse_at_50%_55%,#24201f_0%,#111010_53%,#080808_100%)]">
-      <div className="pointer-events-none absolute inset-x-[10%] bottom-0 h-[52%] rounded-[50%_50%_0_0] border-x border-t border-bone/[0.04] bg-[linear-gradient(180deg,rgba(255,255,255,.025),transparent_38%)] [transform:perspective(900px)_rotateX(8deg)]" />
+      <div className="pointer-events-none absolute inset-x-[7%] top-[7%] bottom-[14%] rounded-[48%_48%_0_0] border-x border-t border-bone/[0.055] bg-[linear-gradient(90deg,rgba(255,255,255,.035),transparent_18%,rgba(255,255,255,.012)_50%,transparent_82%,rgba(255,255,255,.03)),linear-gradient(180deg,rgba(255,255,255,.035),transparent_34%)] shadow-[inset_0_0_100px_rgba(255,90,31,.035),0_0_80px_rgba(0,0,0,.45)] [transform:perspective(1100px)_rotateX(2deg)]" />
+      <div className="pointer-events-none absolute left-[14%] top-[18%] h-[38%] w-px bg-gradient-to-b from-transparent via-ember/35 to-transparent shadow-[0_0_20px_rgba(255,90,31,.55)]" />
+      <div className="pointer-events-none absolute right-[14%] top-[18%] h-[38%] w-px bg-gradient-to-b from-transparent via-bone/25 to-transparent shadow-[0_0_20px_rgba(255,255,255,.2)]" />
+      <div className="pointer-events-none absolute left-[12%] top-[19%] h-28 w-24 rounded-full bg-ember/10 blur-3xl sm:h-40 sm:w-36" />
+      <div className="pointer-events-none absolute right-[12%] top-[18%] h-32 w-28 rounded-full bg-orange-100/[0.07] blur-3xl sm:h-44 sm:w-40" />
+      <div className="pointer-events-none absolute inset-x-[-12%] bottom-[-3%] h-[31%] opacity-25 [background-image:linear-gradient(rgba(255,255,255,.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.12)_1px,transparent_1px)] [background-size:64px_38px] [mask-image:linear-gradient(to_top,black,transparent_95%)] [transform:perspective(420px)_rotateX(54deg)] [transform-origin:bottom]" />
+      <div className="pointer-events-none absolute inset-x-[10%] bottom-0 h-[42%] rounded-[50%_50%_0_0] border-x border-t border-bone/[0.045] bg-[linear-gradient(180deg,rgba(255,255,255,.018),transparent_38%)] [transform:perspective(900px)_rotateX(8deg)]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/50 to-transparent" />
       <motion.div
         className="pointer-events-none absolute left-1/2 top-[42%] h-[55vmin] w-[95vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-ember/25 blur-[120px]"
@@ -73,7 +79,7 @@ export default function Hero() {
 
       {stage === 'character' && (
         <div className="absolute inset-x-0 bottom-3 z-10 flex justify-center sm:bottom-5">
-          <div className="relative aspect-[2/3] h-[min(76svh,900px)] sm:h-[min(90svh,900px)] max-w-[98vw]">
+          <div className="relative aspect-[2/3] h-[min(94svh,1000px)] sm:h-[min(100svh,1100px)] max-w-[105vw]">
             <SeatedPortrait entrance />
           </div>
         </div>
