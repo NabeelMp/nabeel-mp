@@ -1,106 +1,25 @@
-import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
-import { ArrowUpRight } from 'lucide-react'
 import { useSite } from '../lib/site'
 import { useWorks } from '../hooks/useWorks'
-import type { Category, Work } from '../lib/types'
 import { Reveal, SplitWords } from './Reveal'
 
-function Tile({ c, works, i }: { c: Category; works: Work[]; i: number }) {
-  const ref = useRef<HTMLAnchorElement>(null)
-  const mx = useMotionValue(0.5)
-  const my = useMotionValue(0.5)
-  const rx = useSpring(useTransform(my, [0, 1], [8, -8]), { stiffness: 200, damping: 20 })
-  const ry = useSpring(useTransform(mx, [0, 1], [-10, 10]), { stiffness: 200, damping: 20 })
-  const [hover, setHover] = useState(false)
-  const covers = works.map((w) => w.cover_url).filter(Boolean).slice(0, 3) as string[]
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 36, rotate: i % 2 ? 2 : -2 }}
-      whileInView={{ opacity: 1, y: 0, rotate: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
-      transition={{ duration: 0.52, delay: (i % 3) * 0.045, ease: [0.16, 1, 0.3, 1] }}
-      className="[perspective:1000px]"
-    >
-      <motion.div style={{ rotateX: rx, rotateY: ry }}>
-        <Link
-          ref={ref}
-          to={`/projects/${c.key}`}
-          onPointerMove={(e) => {
-            const r = ref.current!.getBoundingClientRect()
-            mx.set((e.clientX - r.left) / r.width)
-            my.set((e.clientY - r.top) / r.height)
-          }}
-          onPointerEnter={() => setHover(true)}
-          onPointerLeave={() => {
-            setHover(false)
-            mx.set(0.5)
-            my.set(0.5)
-          }}
-          className="group relative flex aspect-[4/5] flex-col justify-between overflow-hidden rounded-[28px] border border-bone/10 bg-coal p-6 sm:aspect-[5/6] sm:p-7"
-        >
-          <motion.div
-            className="absolute inset-0"
-            style={{ background: `radial-gradient(circle at 50% 120%, ${c.accent}55, transparent 60%)` }}
-            animate={{ opacity: hover ? 1 : 0.35 }}
-          />
-          <div className="relative flex items-start justify-between">
-            <span className="font-display text-2xl" style={{ color: c.accent }}>
-              {c.index}
-            </span>
-            <span className="text-[10px] uppercase tracking-[0.3em] text-bone/40">{works.length} works</span>
-          </div>
-
-          <div className="pointer-events-none absolute inset-0 grid place-items-center">
-            {covers.map((src, k) => (
-              <motion.img
-                key={src + k}
-                src={src}
-                alt=""
-                className="absolute w-[46%] rounded-xl object-cover shadow-2xl"
-                style={{ aspectRatio: '4/5' }}
-                initial={false}
-                animate={
-                  hover
-                    ? { opacity: 1, x: (k - 1) * 70, y: -10 + Math.abs(k - 1) * 18, rotate: (k - 1) * 12, scale: 1 }
-                    : { opacity: 0.6, x: (k - 1) * 22, y: -20, rotate: (k - 1) * 5, scale: 0.82 }
-                }
-                transition={{ type: 'spring', stiffness: 220, damping: 20, delay: k * 0.04 }}
-              />
-            ))}
-            {covers.length === 0 && (
-              <motion.span animate={{ opacity: hover ? 1 : 0.4, scale: hover ? 1 : 0.9 }} className="font-hand text-2xl text-bone/50">
-                coming soon
-              </motion.span>
-            )}
-          </div>
-
-          <div className="relative">
-            <motion.h3 animate={{ y: hover ? -6 : 0 }} className="font-display text-[clamp(2.6rem,5vw,4rem)] leading-[0.9]">
-              {c.title}
-            </motion.h3>
-            <div className="mt-3 flex items-end justify-between gap-4">
-              <p className="max-w-[80%] text-[13px] leading-snug text-bone/55">{c.blurb}</p>
-              <motion.span
-                animate={{ rotate: hover ? 45 : 0, backgroundColor: hover ? c.accent : 'rgba(242,239,233,0)' }}
-                className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-bone/20 text-bone group-hover:text-ink"
-              >
-                <ArrowUpRight size={18} />
-              </motion.span>
-            </div>
-          </div>
-        </Link>
-      </motion.div>
-    </motion.div>
-  )
+function isVideoUrl(src: string) {
+  if (src.startsWith('data:video/')) return true
+  try {
+    return /\.(mp4|webm|mov|m4v|ogv)$/i.test(new URL(src, window.location.origin).pathname)
+  } catch {
+    return false
+  }
 }
 
 export default function Projects() {
   const { site } = useSite()
   const copy = site.content.projects
-  const works = useWorks() ?? []
+  const loadedWorks = useWorks()
+  const works = loadedWorks ?? []
+  const images = works.flatMap((work) =>
+    [...new Set([work.cover_url, ...work.gallery].filter((src): src is string => typeof src === 'string' && src.length > 0 && !isVideoUrl(src)))].map((src) => ({ work, src })),
+  )
 
   return (
     <section id="projects" className="relative bg-ink py-24 sm:py-32">
@@ -121,11 +40,33 @@ export default function Projects() {
           </Reveal>
         </div>
 
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {site.categories.map((c, i) => (
-            <Tile key={c.key} c={c} i={i} works={works.filter((w) => w.category === c.key)} />
-          ))}
-        </div>
+        {loadedWorks === null ? (
+          <div className="mt-14 columns-1 gap-5 sm:columns-2 xl:columns-3" aria-label="Loading project gallery">
+            {[0, 1, 2].map((item) => <div key={item} className="mb-5 h-72 break-inside-avoid animate-pulse rounded-2xl bg-coal" />)}
+          </div>
+        ) : images.length > 0 ? (
+          <div className="mt-14 columns-1 gap-5 sm:columns-2 xl:columns-3">
+            {images.map(({ work, src }, index) => (
+              <Link
+                key={`${work.id}-${src}`}
+                to={`/projects/${work.category}/${work.slug}`}
+                className="group mb-5 block break-inside-avoid rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ember"
+                aria-label={`Open ${work.title}`}
+              >
+                <img
+                  src={src}
+                  alt={work.title}
+                  loading={index < 3 ? 'eager' : 'lazy'}
+                  decoding="async"
+                  className="block h-auto w-full rounded-2xl bg-coal/40"
+                />
+                <p className="mt-3 text-sm font-medium text-bone transition-colors duration-200 group-hover:text-ember">{work.title}</p>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-14 text-sm text-bone/50">No project images have been added yet.</p>
+        )}
       </div>
     </section>
   )

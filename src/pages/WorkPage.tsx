@@ -111,7 +111,7 @@ export default function WorkPage() {
             transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
             className="mt-10 overflow-hidden rounded-[28px]"
           >
-            <img src={work.cover_url} alt={work.title} className="max-h-[80vh] w-full object-cover" />
+            <img src={work.cover_url} alt={work.title} className="block h-auto max-h-none w-full object-contain" />
           </motion.div>
         )}
 
