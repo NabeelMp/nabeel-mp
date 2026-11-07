@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import PageShell from '../components/PageShell'
 import ReviewForm from '../components/ReviewForm'
 import Stars from '../components/Stars'
 import { useSite } from '../lib/site'
-import { getWork, listReviews, listWorks } from '../lib/api'
-import type { Review, Work } from '../lib/types'
+import { listReviews } from '../lib/api'
+import { useWorks } from '../hooks/useWorks'
+import type { Review } from '../lib/types'
 import NotFound from './NotFound'
 
 function Video({ url }: { url: string }) {
@@ -37,23 +38,28 @@ function isDirectVideo(url: string) {
 export default function WorkPage() {
   const { site } = useSite()
   const { category = '', slug = '' } = useParams()
+  const navigate = useNavigate()
   const cat = site.categories.find((c) => c.key === category)
-  const [work, setWork] = useState<Work | null | undefined>(undefined)
-  const [siblings, setSiblings] = useState<Work[]>([])
+  const works = useWorks(category)
+  const previousWorkId = useRef<string | null>(null)
   const [reviews, setReviews] = useState<Review[]>([])
+  const work = works?.find((item) => item.slug === slug)
+    ?? works?.find((item) => item.id === previousWorkId.current)
 
   useEffect(() => {
-    setWork(undefined)
-    getWork(category, slug).then(setWork).catch(() => setWork(null))
-    if (cat) listWorks(cat.key).then(setSiblings).catch(() => setSiblings([]))
-  }, [category, slug, cat])
+    if (!work) return
+    previousWorkId.current = work.id
+    if (work.category !== category || work.slug !== slug) {
+      navigate(`/projects/${work.category}/${work.slug}`, { replace: true })
+    }
+  }, [work, category, slug, navigate])
 
   useEffect(() => {
     if (work) listReviews({ workId: work.id }).then(setReviews).catch(() => setReviews([]))
   }, [work])
 
-  if (!cat || work === null) return <NotFound />
-  if (work === undefined)
+  if (!cat || (works !== null && !work)) return <NotFound />
+  if (!work)
     return (
       <PageShell>
         <div className="container-x">
@@ -62,6 +68,7 @@ export default function WorkPage() {
       </PageShell>
     )
 
+  const siblings = works ?? []
   const i = siblings.findIndex((w) => w.id === work.id)
   const prev = siblings.length > 1 ? siblings[(i - 1 + siblings.length) % siblings.length] : null
   const next = siblings.length > 1 ? siblings[(i + 1) % siblings.length] : null

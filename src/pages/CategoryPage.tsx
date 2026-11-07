@@ -1,24 +1,16 @@
-import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react'
 import PageShell from '../components/PageShell'
 import { useSite } from '../lib/site'
-import { listWorks } from '../lib/api'
-import type { Work } from '../lib/types'
+import { useWorks } from '../hooks/useWorks'
 import NotFound from './NotFound'
 
 export default function CategoryPage() {
   const { site } = useSite()
   const { category } = useParams()
   const cat = site.categories.find((c) => c.key === category)
-  const [works, setWorks] = useState<Work[] | null>(null)
-
-  useEffect(() => {
-    if (!cat) return
-    setWorks(null)
-    listWorks(cat.key).then(setWorks).catch(() => setWorks([]))
-  }, [cat])
+  const works = useWorks(category)
 
   if (!cat) return <NotFound />
   const list = site.categories

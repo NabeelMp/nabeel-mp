@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
 import { useSite } from '../lib/site'
-import { listWorks } from '../lib/api'
+import { useWorks } from '../hooks/useWorks'
 import type { Category, Work } from '../lib/types'
 import { Reveal, SplitWords } from './Reveal'
 
@@ -100,10 +100,7 @@ function Tile({ c, works, i }: { c: Category; works: Work[]; i: number }) {
 export default function Projects() {
   const { site } = useSite()
   const copy = site.content.projects
-  const [works, setWorks] = useState<Work[]>([])
-  useEffect(() => {
-    listWorks().then(setWorks).catch(console.error)
-  }, [])
+  const works = useWorks() ?? []
 
   return (
     <section id="projects" className="relative bg-ink py-24 sm:py-32">

@@ -14,7 +14,7 @@ grant execute on function public.is_admin() to anon, authenticated;
 
 create table if not exists public.works (
   id uuid primary key default gen_random_uuid(),
-  category text not null check (category in ('branding','packaging','package','video-editing','motion-graphics','3d-animation')),
+  category text not null,
   slug text not null,
   title text not null,
   client text,
@@ -28,6 +28,8 @@ create table if not exists public.works (
   created_at timestamptz not null default now(),
   unique (category, slug)
 );
+-- Existing installations may still have the original six-category restriction.
+alter table public.works drop constraint if exists works_category_check;
 
 create table if not exists public.reviews (
   id uuid primary key default gen_random_uuid(),
@@ -73,6 +75,18 @@ create policy "site settings admin write" on public.site_settings for all using 
 
 insert into storage.buckets (id, name, public) values ('works', 'works', true)
 on conflict (id) do update set public = true;
+
+-- Allow already-open portfolio pages to receive project edits in real time.
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+    and not exists (
+      select 1 from pg_publication_tables
+      where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'works'
+    ) then
+    alter publication supabase_realtime add table public.works;
+  end if;
+end $$;
 
 drop policy if exists "works media public read" on storage.objects;
 create policy "works media public read" on storage.objects for select using (bucket_id = 'works');

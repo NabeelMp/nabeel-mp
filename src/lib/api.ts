@@ -29,6 +29,32 @@ export async function listWorks(category?: CategoryKey): Promise<Work[]> {
   return category ? all.filter((w) => w.category === category) : all
 }
 
+/** Keep open portfolio pages in sync with project edits from the admin or another browser. */
+export function subscribeToWorks(onChange: () => void): () => void {
+  if (typeof window === 'undefined') return () => undefined
+
+  const refreshWhenVisible = () => {
+    if (document.visibilityState === 'visible') onChange()
+  }
+  const refreshFromStorage = (event: StorageEvent) => {
+    if (event.key === 'nabeel.works' || event.key === null) refreshWhenVisible()
+  }
+  window.addEventListener('focus', refreshWhenVisible)
+  window.addEventListener('storage', refreshFromStorage)
+  document.addEventListener('visibilitychange', refreshWhenVisible)
+
+  const channel = supabase?.channel('portfolio-works-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'works' }, onChange)
+    .subscribe()
+
+  return () => {
+    window.removeEventListener('focus', refreshWhenVisible)
+    window.removeEventListener('storage', refreshFromStorage)
+    document.removeEventListener('visibilitychange', refreshWhenVisible)
+    if (channel) void supabase?.removeChannel(channel)
+  }
+}
+
 export async function getWork(category: string, slug: string): Promise<Work | null> {
   if (supabase) {
     const { data, error } = await supabase.from('works').select('*').eq('category', category).eq('slug', slug).maybeSingle()

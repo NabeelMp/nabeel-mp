@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -38,7 +38,7 @@ import {
   SiteSettingsBar,
 } from '../components/admin/sections'
 import { EmptyState, Field, ImageInput, PasswordInput, Section, TextArea, TextInput, Toast } from '../components/admin/ui'
-import { createWork, createWorks, deleteReview, deleteWork, listReviews, listWorks, uniqueSlug, updateWork, uploadMedia } from '../lib/api'
+import { createWork, createWorks, deleteReview, deleteWork, listReviews, listWorks, subscribeToWorks, uniqueSlug, updateWork, uploadMedia } from '../lib/api'
 import { changeCredentials, getDemoCredentials, resetDemoCredentials, signIn, signOut, useAdminSession, useAutoLock } from '../lib/auth'
 import { isSupabaseReady, supabase } from '../lib/supabase'
 import { useSite } from '../lib/site'
@@ -488,10 +488,11 @@ function WorksTab({ onToast }: { onToast: (m: string) => void }) {
   const [busy, setBusy] = useState(false)
   const [importBusy, setImportBusy] = useState(false)
 
-  const reload = () => listWorks().then(setWorks).catch(console.error)
+  const reload = useCallback(() => listWorks().then(setWorks).catch(console.error), [])
   useEffect(() => {
-    reload()
-  }, [])
+    void reload()
+    return subscribeToWorks(() => { void reload() })
+  }, [reload])
 
   const shown = filter === 'all' ? works : works.filter((w) => w.category === filter)
 
