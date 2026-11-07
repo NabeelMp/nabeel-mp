@@ -59,16 +59,34 @@ export function useAdminSession() {
       }
     }
     const client = supabase
-    const check = async () => {
-      const { data } = await client.auth.getSession()
-      const user = data.session?.user
-      if (!user) return setState({ loading: false, isAdmin: false, email: null })
-      const { data: ok } = await client.rpc('is_admin')
-      setState({ loading: false, isAdmin: Boolean(ok), email: user.email ?? null })
+    let active = true
+    let revision = 0
+    const { data: sub } = client.auth.onAuthStateChange((_event, session) => {
+      const currentRevision = ++revision
+      const user = session?.user
+      if (!user) {
+        setState({ loading: false, isAdmin: false, email: null })
+        return
+      }
+
+      setState({ loading: true, isAdmin: false, email: user.email ?? null })
+      // Defer Supabase calls until its auth event lock is released.
+      window.setTimeout(() => {
+        void Promise.resolve(client.rpc('is_admin')).then(({ data: isAdmin, error }) => {
+          if (active && currentRevision === revision) {
+            setState({ loading: false, isAdmin: !error && Boolean(isAdmin), email: user.email ?? null })
+          }
+        }).catch(() => {
+          if (active && currentRevision === revision) {
+            setState({ loading: false, isAdmin: false, email: user.email ?? null })
+          }
+        })
+      }, 0)
+    })
+    return () => {
+      active = false
+      sub.subscription.unsubscribe()
     }
-    check()
-    const { data: sub } = client.auth.onAuthStateChange(() => check())
-    return () => sub.subscription.unsubscribe()
   }, [])
 
   return state

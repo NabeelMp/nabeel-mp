@@ -18,10 +18,10 @@ function Tile({ c, works, i }: { c: Category; works: Work[]; i: number }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 80, rotate: i % 2 ? 4 : -4 }}
+      initial={{ opacity: 0, y: 36, rotate: i % 2 ? 2 : -2 }}
       whileInView={{ opacity: 1, y: 0, rotate: 0 }}
-      viewport={{ once: false, amount: 0.25 }}
-      transition={{ duration: 0.9, delay: (i % 3) * 0.08, ease: [0.16, 1, 0.3, 1] }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: 0.52, delay: (i % 3) * 0.045, ease: [0.16, 1, 0.3, 1] }}
       className="[perspective:1000px]"
     >
       <motion.div style={{ rotateX: rx, rotateY: ry }}>

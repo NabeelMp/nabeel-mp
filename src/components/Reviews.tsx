@@ -59,8 +59,8 @@ export default function Reviews() {
       <motion.div
         initial={{ opacity: 0, x: 120 }}
         whileInView={{ opacity: 1, x: 0 }}
-        viewport={{ amount: 0.2 }}
-        transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
         className="mask-fade-x group mt-14 flex overflow-hidden"
       >
         <div

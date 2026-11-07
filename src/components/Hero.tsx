@@ -13,8 +13,8 @@ export default function Hero() {
   useSnapScroll(ref, 'about', useCallback(() => {}, []))
 
   useEffect(() => {
-    const t = setTimeout(() => setStage('character'), 2500)
-    const arrivedTimer = setTimeout(() => setArrived(true), 2950)
+    const t = setTimeout(() => setStage('character'), 650)
+    const arrivedTimer = setTimeout(() => setArrived(true), 900)
     return () => { clearTimeout(t); clearTimeout(arrivedTimer) }
   }, [])
 
@@ -32,7 +32,7 @@ export default function Hero() {
         className="pointer-events-none absolute left-1/2 top-[42%] h-[55vmin] w-[95vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-ember/25 blur-[120px]"
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: [0, 1, 0.75], scale: 1 }}
-        transition={{ duration: 2.6, ease: 'easeOut' }}
+        transition={{ duration: 1.1, ease: 'easeOut' }}
       />
 
       <div className="pointer-events-none absolute inset-x-0 top-[15%] z-0 flex justify-center sm:top-[12%]">
@@ -41,7 +41,7 @@ export default function Hero() {
           className="font-tall flex select-none leading-none text-bone/35"
           style={{ fontSize: 'clamp(4.5rem, 21vw, 22rem)', letterSpacing: '0.01em' }}
           animate={stage === 'character' ? { opacity: 0.45, scale: 0.96 } : {}}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
         >
           {WORD.map((l, i) => (
             <motion.span
@@ -50,7 +50,7 @@ export default function Hero() {
               className="inline-block origin-bottom"
               initial={{ opacity: 0, y: '35%', scaleY: 1.6, filter: 'blur(16px)' }}
               animate={{ opacity: 1, y: 0, scaleY: 1.18, filter: 'blur(0px)' }}
-              transition={{ delay: 0.35 + i * 0.1, duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ delay: 0.08 + i * 0.055, duration: 0.58, ease: [0.16, 1, 0.3, 1] }}
             >
               {l}
             </motion.span>
@@ -62,7 +62,7 @@ export default function Hero() {
         className="absolute left-5 top-6 z-20 flex items-center gap-2 sm:left-10 sm:top-8"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.6 }}
+        transition={{ delay: 0.2, duration: 0.4 }}
       >
         <span className="h-2 w-2 animate-pulse rounded-full bg-ember" />
         <span className="text-[11px] font-bold tracking-[0.4em]">{site.hero.eyebrow}</span>
@@ -71,7 +71,7 @@ export default function Hero() {
         className="absolute right-5 top-6 z-20 hidden text-right text-[10px] font-semibold uppercase tracking-[0.3em] text-bone/50 sm:right-10 sm:top-8 sm:block"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.8 }}
+        transition={{ delay: 0.25, duration: 0.4 }}
       >
         {site.profile.roles.join(' · ')}
         <br />© {new Date().getFullYear()}
@@ -89,7 +89,7 @@ export default function Hero() {
         className="absolute left-5 top-[24%] z-20 max-w-[78vw] sm:left-[8%] sm:top-[34%] sm:max-w-[27vw]"
         initial={{ opacity: 0, y: 20 }}
         animate={arrived ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 0.45 }}
       >
         <h1 className="font-display text-[clamp(2.25rem,4.6vw,4.75rem)] font-medium leading-[0.9] tracking-[-0.045em] text-bone">
           {site.hero.name}
@@ -100,14 +100,14 @@ export default function Hero() {
         className="absolute bottom-6 right-5 z-20 flex flex-col items-center gap-2 sm:bottom-10 sm:right-10"
         initial={{ opacity: 0 }}
         animate={arrived ? { opacity: 1 } : {}}
-        transition={{ delay: 0.6 }}
+        transition={{ delay: 0.15, duration: 0.4 }}
       >
         <span className="text-[10px] uppercase tracking-[0.3em] text-bone/50">{site.hero.scrollLabel}</span>
         <span className="relative h-10 w-[2px] overflow-hidden rounded-full bg-bone/15">
           <motion.span
             className="absolute inset-x-0 top-0 h-1/2 rounded-full bg-ember"
             animate={{ y: ['-100%', '200%'] }}
-            transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+            transition={{ duration: 0.9, repeat: Infinity, ease: 'easeInOut' }}
           />
         </span>
       </motion.div>

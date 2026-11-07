@@ -8,7 +8,7 @@ export function useSnapScroll(
   ref: RefObject<HTMLElement | null>,
   nextId: string,
   onSnap: () => void,
-  delay = 520,
+  delay = 80,
 ) {
   const cb = useRef(onSnap)
   useEffect(() => {
@@ -32,12 +32,9 @@ export function useSnapScroll(
       }
       if (!atBottomOfSection()) return
       if (e.cancelable) e.preventDefault()
-      lockedUntil = performance.now() + 60_000
+      lockedUntil = performance.now() + delay + 680
       cb.current()
-      window.setTimeout(async () => {
-        await scrollToId(nextId, 1150)
-        lockedUntil = performance.now() + 650
-      }, delay)
+      window.setTimeout(() => { void scrollToId(nextId) }, delay)
     }
     const onWheel = (e: WheelEvent) => {
       if (e.deltaY > 6) fire(e)

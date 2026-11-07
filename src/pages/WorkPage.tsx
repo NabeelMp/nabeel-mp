@@ -86,7 +86,7 @@ export default function WorkPage() {
 
         <header className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end">
           <h1 className="overflow-hidden font-display text-[clamp(3.5rem,10vw,9rem)] leading-[0.85]">
-            <motion.span className="inline-block" initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}>
+            <motion.span className="inline-block" initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}>
               {work.title}
             </motion.span>
           </h1>
@@ -108,7 +108,7 @@ export default function WorkPage() {
           <motion.div
             initial={{ clipPath: 'inset(20% 10% 20% 10% round 28px)', opacity: 0 }}
             animate={{ clipPath: 'inset(0% 0% 0% 0% round 28px)', opacity: 1 }}
-            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+            transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
             className="mt-10 overflow-hidden rounded-[28px]"
           >
             <img src={work.cover_url} alt={work.title} className="max-h-[80vh] w-full object-cover" />
@@ -152,8 +152,8 @@ export default function WorkPage() {
                   preload="metadata"
                   initial={{ opacity: 0, y: 40 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.8 }}
+                  viewport={{ once: true, amount: 0.15 }}
+                  transition={{ duration: 0.45 }}
                   className="mb-5 w-full break-inside-avoid rounded-[24px] bg-coal"
                 />
               ) : (
@@ -164,8 +164,8 @@ export default function WorkPage() {
                   loading="lazy"
                   initial={{ opacity: 0, y: 40 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.8 }}
+                  viewport={{ once: true, amount: 0.15 }}
+                  transition={{ duration: 0.45 }}
                   className="mb-5 w-full break-inside-avoid rounded-[24px]"
                 />
               )

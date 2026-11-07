@@ -11,7 +11,7 @@ export default function PageShell({ children }: { children: ReactNode }) {
       <motion.main
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
         className="min-h-screen pb-16 pt-28 sm:pt-32"
       >
         {children}

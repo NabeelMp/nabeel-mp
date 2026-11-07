@@ -10,7 +10,7 @@ function Counter({ to, suffix }: { to: number; suffix: string }) {
   const inView = useInView(ref, { amount: 0.6 })
   useEffect(() => {
     if (!inView || !ref.current) return
-    const c = animate(0, to, { duration: 1.6, ease: 'easeOut', onUpdate: (v) => ref.current && (ref.current.textContent = Math.round(v) + suffix) })
+    const c = animate(0, to, { duration: 0.8, ease: 'easeOut', onUpdate: (v) => ref.current && (ref.current.textContent = Math.round(v) + suffix) })
     return () => c.stop()
   }, [inView, to, suffix])
   return <span ref={ref}>0{suffix}</span>
@@ -43,7 +43,7 @@ export default function About() {
             <motion.div
               className="relative h-full w-full [transform-style:preserve-3d]"
               animate={{ rotateY: flipped ? 180 : 0 }}
-              transition={{ duration: 0.9, ease: [0.65, 0, 0.35, 1] }}
+              transition={{ duration: 0.55, ease: [0.65, 0, 0.35, 1] }}
             >
               <div className="card absolute inset-0 overflow-hidden [backface-visibility:hidden]">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,90,31,.22),transparent_60%)]" />

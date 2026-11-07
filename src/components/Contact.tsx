@@ -82,7 +82,7 @@ export default function Contact() {
               initial={{ opacity: 0, y: 20, scale: 0.6 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: false }}
-              transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.3 + i * 0.08 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 24, delay: 0.12 + i * 0.045 }}
               whileHover={{ y: -6, rotate: i % 2 ? 8 : -8 }}
               className="grid h-14 w-14 place-items-center rounded-full border border-bone/15 text-bone transition-colors hover:border-ember hover:bg-ember hover:text-onaccent"
             >

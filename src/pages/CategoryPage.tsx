@@ -31,7 +31,7 @@ export default function CategoryPage() {
               {cat.index} / 06
             </motion.p>
             <h1 className="mt-2 overflow-hidden font-display text-[clamp(4rem,14vw,12rem)] leading-[0.85]">
-              <motion.span className="inline-block" initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}>
+              <motion.span className="inline-block" initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}>
                 {cat.title}
               </motion.span>
             </h1>
@@ -54,10 +54,10 @@ export default function CategoryPage() {
             {works.map((w, i) => (
               <motion.div
                 key={w.id}
-                initial={{ opacity: 0, y: 60 }}
+                initial={{ opacity: 0, y: 34 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.8, delay: (i % 3) * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{ duration: 0.48, delay: (i % 3) * 0.04, ease: [0.16, 1, 0.3, 1] }}
               >
                 <Link to={`/projects/${cat.key}/${w.slug}`} className="group block">
                   <div className="relative aspect-[4/5] overflow-hidden rounded-[24px] bg-coal">

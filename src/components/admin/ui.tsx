@@ -5,7 +5,7 @@ import { uploadMedia } from '../../lib/api'
 
 export function Section({ title, hint, children, aside }: { title: string; hint?: string; children: ReactNode; aside?: ReactNode }) {
   return (
-    <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="card overflow-hidden">
+    <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }} className="card overflow-hidden">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line/10 px-6 py-5">
         <div>
           <h2 className="font-display text-2xl leading-none">{title}</h2>

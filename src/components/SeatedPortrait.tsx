@@ -10,7 +10,7 @@ export default function SeatedPortrait({ className = '', entrance = false }: { c
       style={{ perspective: 1200, transformStyle: 'preserve-3d' }}
       initial={entrance && !reduceMotion ? { opacity: 0, y: 70, rotateX: 9, rotateY: -5, scale: 0.92 } : false}
       animate={{ opacity: 1, y: 0, rotateX: 0, rotateY: 0, scale: 1 }}
-      transition={{ duration: 1.35, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
       whileHover={reduceMotion ? undefined : { rotateY: 2, rotateX: -1, scale: 1.015 }}
     >
       <motion.div

@@ -33,10 +33,10 @@ export default function WhatIDo() {
             return (
               <motion.li
                 key={s.title}
-                initial={{ opacity: 0, y: 40 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.4 }}
-                transition={{ duration: 0.8, delay: (i % 3) * 0.08, ease }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{ duration: 0.48, delay: (i % 3) * 0.04, ease }}
                 className="group relative overflow-hidden border-b border-r border-ink/10"
               >
                 <span className="absolute inset-0 origin-bottom scale-y-0 bg-ink transition-transform duration-500 ease-out group-hover:scale-y-100" />
@@ -68,8 +68,8 @@ export default function WhatIDo() {
                 key={p}
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.8 }}
-                transition={{ duration: 0.6, delay: i * 0.07, ease }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{ duration: 0.38, delay: i * 0.035, ease }}
                 className="relative flex flex-col items-center text-center"
               >
                 <span className="relative z-10 grid h-6 w-6 place-items-center rounded-full border border-ink/20 bg-bone">
