@@ -117,7 +117,7 @@ export const defaultSite: SiteContent = {
     name: 'Muhammed Nabeel MP',
     sub: 'Designer · Storyteller',
     scrollLabel: 'Scroll',
-    profileImage: '/char/seated-portrait-cutout-v2.png',
+    profileImage: '/char/mr-me.png',
     realImage: '/me-original.jpg',
   },
   content: {
@@ -201,7 +201,12 @@ const isObject = (v: unknown): v is Record<string, unknown> =>
 
 function normalizePortrait(site: SiteContent): SiteContent {
   const image = site.hero.profileImage
-  if (image === '/char/rig.webp' || image === '/char/seated-portrait.png' || image.startsWith('data:image/')) {
+  if (
+    image === '/char/rig.webp' ||
+    image === '/char/seated-portrait.png' ||
+    image === '/char/seated-portrait-cutout-v2.png' ||
+    image.startsWith('data:image/')
+  ) {
     site.hero.profileImage = defaultSite.hero.profileImage
   }
   return site

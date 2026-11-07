@@ -19,7 +19,7 @@ export default function SeatedPortrait({ className = '', entrance = false }: { c
         transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
       />
       <motion.img
-        src={site.hero.profileImage || '/char/seated-portrait-cutout-v2.png'}
+        src={site.hero.profileImage || '/char/mr-me.png'}
         alt="Muhammed Nabeel MP seated in his studio chair"
         draggable={false}
         className="pointer-events-none absolute inset-0 z-0 h-full w-full select-none object-contain object-bottom opacity-30 blur-[3px] [transform:translate3d(8px,10px,-18px)]"
@@ -31,7 +31,7 @@ export default function SeatedPortrait({ className = '', entrance = false }: { c
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
       />
       <motion.img
-        src={site.hero.profileImage || '/char/seated-portrait-cutout-v2.png'}
+        src={site.hero.profileImage || '/char/mr-me.png'}
         alt="Muhammed Nabeel MP seated in his studio chair"
         draggable={false}
         className="relative z-[1] h-full w-full select-none object-contain object-bottom drop-shadow-[0_30px_28px_rgba(0,0,0,.54)] drop-shadow-[0_0_22px_rgba(255,113,55,.12)]"
