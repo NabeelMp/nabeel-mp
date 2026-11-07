@@ -73,7 +73,7 @@ export default function Hero() {
 
       {stage === 'character' && (
         <div className="absolute inset-x-0 bottom-3 z-10 flex justify-center sm:bottom-5">
-          <div className="relative aspect-[2/3] h-[min(68svh,800px)] sm:h-[min(80svh,800px)] max-w-[94vw]">
+          <div className="relative aspect-[2/3] h-[min(76svh,900px)] sm:h-[min(90svh,900px)] max-w-[98vw]">
             <SeatedPortrait entrance />
           </div>
         </div>
