@@ -38,7 +38,7 @@ import {
   SiteSettingsBar,
 } from '../components/admin/sections'
 import { EmptyState, Field, ImageInput, PasswordInput, Section, TextArea, TextInput, Toast } from '../components/admin/ui'
-import { createWork, createWorks, deleteReview, deleteWork, listReviews, listWorks, uniqueSlug, updateWork } from '../lib/api'
+import { createWork, createWorks, deleteReview, deleteWork, listReviews, listWorks, uniqueSlug, updateWork, uploadMedia } from '../lib/api'
 import { changeCredentials, getDemoCredentials, resetDemoCredentials, signIn, signOut, useAdminSession, useAutoLock } from '../lib/auth'
 import { isSupabaseReady, supabase } from '../lib/supabase'
 import { useSite } from '../lib/site'
@@ -230,6 +230,52 @@ const emptyWork = {
 
 type WorkDraft = typeof emptyWork
 
+function isVideoMedia(url: string) {
+  if (url.startsWith('data:video/')) return true
+  try {
+    return /\.(mp4|webm|mov|m4v|ogv)$/i.test(new URL(url, window.location.origin).pathname)
+  } catch {
+    return false
+  }
+}
+
+async function sampleVideoFrames(file: File): Promise<string[]> {
+  const objectUrl = URL.createObjectURL(file)
+  const video = document.createElement('video')
+  video.preload = 'metadata'
+  video.muted = true
+  video.src = objectUrl
+  try {
+    await new Promise<void>((resolve, reject) => {
+      video.onloadedmetadata = () => resolve()
+      video.onerror = () => reject(new Error('This video format could not be previewed for AI analysis.'))
+    })
+    if (!Number.isFinite(video.duration) || video.duration <= 0) return []
+    const times = [...new Set([video.duration * 0.15, video.duration * 0.5, video.duration * 0.85].map((time) => Math.min(time, Math.max(0, video.duration - 0.1))))]
+    const canvas = document.createElement('canvas')
+    const scale = Math.min(1, 640 / (video.videoWidth || 640))
+    canvas.width = Math.max(1, Math.round((video.videoWidth || 640) * scale))
+    canvas.height = Math.max(1, Math.round((video.videoHeight || 360) * scale))
+    const context = canvas.getContext('2d')
+    if (!context) return []
+    const frames: string[] = []
+    for (const time of times) {
+      await new Promise<void>((resolve, reject) => {
+        video.onseeked = () => resolve()
+        video.onerror = () => reject(new Error('Could not read a video frame.'))
+        video.currentTime = time
+      })
+      context.drawImage(video, 0, 0, canvas.width, canvas.height)
+      frames.push(canvas.toDataURL('image/jpeg', 0.68))
+    }
+    return frames
+  } finally {
+    video.removeAttribute('src')
+    video.load()
+    URL.revokeObjectURL(objectUrl)
+  }
+}
+
 function parseCsv(text: string): string[][] {
   const rows: string[][] = []
   let row: string[] = []
@@ -264,10 +310,103 @@ const toDraft = (w: Work): WorkDraft => ({
 })
 
 function WorkEditor({ draft, setDraft, categories }: { draft: WorkDraft; setDraft: (d: WorkDraft) => void; categories: { key: CategoryKey; title: string }[] }) {
+  const [mediaBusy, setMediaBusy] = useState(false)
+  const [mediaStatus, setMediaStatus] = useState<string | null>(null)
+  const [aiBusy, setAiBusy] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
+  const [aiNotes, setAiNotes] = useState('')
+  const [videoFrames, setVideoFrames] = useState<string[]>([])
   const set = <K extends keyof WorkDraft>(k: K, v: WorkDraft[K]) => setDraft({ ...draft, [k]: v })
-  const setGalleryAt = (i: number, v: string) => set('gallery', draft.gallery.map((g, k) => (k === i ? v : g)))
+  const addMedia = async (files: FileList | null) => {
+    if (!files?.length) return
+    const selected = Array.from(files)
+    setMediaBusy(true)
+    setMediaStatus(`Uploading ${selected.length} file${selected.length === 1 ? '' : 's'}…`)
+    setAiError(null)
+    try {
+      const sampledFrames = await Promise.all(selected.filter((file) => file.type.startsWith('video/')).map((file) => sampleVideoFrames(file).catch(() => [])))
+      let coverUrl = draft.cover_url
+      let videoUrl = draft.video_url
+      const gallery = [...draft.gallery]
+      let uploaded = 0
+      for (const file of selected) {
+        const url = await uploadMedia(file)
+        if (file.type.startsWith('image/')) {
+          if (!coverUrl) coverUrl = url
+          else gallery.push(url)
+        } else if (file.type.startsWith('video/')) {
+          if (!videoUrl) videoUrl = url
+          else gallery.push(url)
+        } else {
+          continue
+        }
+        uploaded += 1
+        setMediaStatus(`Uploaded ${uploaded} of ${selected.length} files…`)
+      }
+      setDraft({ ...draft, cover_url: coverUrl, video_url: videoUrl, gallery })
+      setVideoFrames((current) => [...current, ...sampledFrames.flat()].slice(0, 9))
+      setMediaStatus(`${uploaded} media file${uploaded === 1 ? '' : 's'} added.`)
+    } catch (error) {
+      setMediaStatus(error instanceof Error ? error.message : 'Media upload failed.')
+    } finally {
+      setMediaBusy(false)
+    }
+  }
+  const generateWithAI = async () => {
+    if (!supabase) {
+      setAiError('AI generation requires the shared Supabase admin login.')
+      return
+    }
+    const imageUrls = [draft.cover_url, ...draft.gallery].filter((url) => url && !isVideoMedia(url)).slice(0, 7)
+    const media = [...imageUrls, ...videoFrames].slice(0, 10)
+    if (!media.length) {
+      setAiError('Upload at least one image or video first. Video analysis uses a few sampled frames.')
+      return
+    }
+    setAiBusy(true)
+    setAiError(null)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error('Your admin session expired. Sign in again.')
+      const response = await fetch('/api/generate-project', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ title: draft.title, category: draft.category, client: draft.client, year: draft.year, notes: aiNotes, categories, media }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'AI generation failed.')
+      setDraft({
+        ...draft,
+        title: result.title || draft.title,
+        category: result.category || draft.category,
+        summary: result.summary || draft.summary,
+        description: result.description || draft.description,
+        tags: Array.isArray(result.tags) ? result.tags.join(', ') : draft.tags,
+      })
+    } catch (error) {
+      setAiError(error instanceof Error ? error.message : 'AI generation failed.')
+    } finally {
+      setAiBusy(false)
+    }
+  }
   return (
     <>
+      <div className="rounded-2xl border border-ember/25 bg-ember/[0.06] p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold">AI project assistant</p>
+            <p className="mt-1 text-xs text-bone/50">Generate a title, category, summary, description and keywords from your media. Review the draft before saving.</p>
+          </div>
+          <button type="button" onClick={() => void generateWithAI()} disabled={aiBusy || mediaBusy} className="btn-ember !px-4 !py-2 !text-xs">
+            <Sparkles size={14} /> {aiBusy ? 'Analyzing media…' : 'Generate details'}
+          </button>
+        </div>
+        <div className="mt-3">
+          <TextInput value={aiNotes} onChange={setAiNotes} placeholder="Optional notes for the AI (project goal, audience, style…)" />
+        </div>
+        <p className="mt-2 text-[11px] text-bone/40">Selected images and sampled video frames are sent to OpenAI only when you generate. Client and year are never guessed.</p>
+        {aiError && <p className="mt-2 text-xs text-ember">{aiError}</p>}
+      </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Title *">
           <TextInput value={draft.title} onChange={(v) => set('title', v)} placeholder="Project title" />
@@ -304,11 +443,26 @@ function WorkEditor({ draft, setDraft, categories }: { draft: WorkDraft; setDraf
       </div>
       <ImageInput label="Cover image" value={draft.cover_url} onChange={(v) => set('cover_url', v)} />
       <div className="grid gap-3">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-bone/50">Gallery images</span>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-bone/50">Project media</span>
+          <label className={`btn-ghost w-fit cursor-pointer !px-4 !py-2 !text-xs ${mediaBusy ? 'pointer-events-none opacity-50' : ''}`}>
+            <FileUp size={14} /> {mediaBusy ? 'Uploading…' : 'Choose images & videos'}
+            <input type="file" accept="image/*,video/*" multiple className="hidden" disabled={mediaBusy} onChange={(event) => { void addMedia(event.target.files); event.target.value = '' }} />
+          </label>
+        </div>
+        <p className="text-[11px] text-bone/40">Select several images and videos together. The first image fills the cover if empty; the first video fills Video URL and the rest appear in the gallery.</p>
+        {mediaStatus && <p className="text-xs text-bone/60">{mediaStatus}</p>}
         {draft.gallery.map((g, i) => (
           <div key={i} className="flex items-end gap-2">
             <div className="flex-1">
-              <ImageInput label={`Image ${i + 1}`} value={g} onChange={(v) => setGalleryAt(i, v)} />
+              <Field label={`Media ${i + 1}`}>
+                <div className="flex items-center gap-3">
+                  <div className="h-16 w-24 shrink-0 overflow-hidden rounded-lg border border-line/10 bg-ash">
+                    {isVideoMedia(g) ? <video src={g} muted playsInline className="h-full w-full object-cover" /> : <img src={g} alt="" className="h-full w-full object-cover" />}
+                  </div>
+                  <input className="input min-w-0 flex-1" value={g} onChange={(event) => set('gallery', draft.gallery.map((item, index) => index === i ? event.target.value : item))} />
+                </div>
+              </Field>
             </div>
             <button type="button" onClick={() => set('gallery', draft.gallery.filter((_, k) => k !== i))} className="mb-1 grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line/15 text-ember transition-colors hover:bg-ember hover:text-onaccent" aria-label="Remove image">
               <Trash2 size={14} />

@@ -122,11 +122,12 @@ export async function deleteReview(id: string): Promise<void> {
 
 export async function uploadMedia(file: File): Promise<string> {
   if (supabase) {
-    const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
-    const { error } = await supabase.storage.from(WORKS_BUCKET).upload(path, file, { upsert: false })
+    const path = `${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
+    const { error } = await supabase.storage.from(WORKS_BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined })
     if (error) throw error
     return supabase.storage.from(WORKS_BUCKET).getPublicUrl(path).data.publicUrl
   }
+  if (file.type.startsWith('video/')) throw new Error('Video uploads need shared Supabase storage configured.')
   return await new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(reader.result as string)

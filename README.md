@@ -22,6 +22,10 @@ Existing demo data in a browser's local storage is not automatically copied into
 
 For local development, copy `.env.example` to `.env.local` and fill in the same two Supabase values. Never use a Supabase `service_role` key in the browser or in a `VITE_` variable.
 
+## AI project assistant
+
+Add `OPENAI_API_KEY` as a server-only environment variable in the Vercel project and redeploy to enable AI project copy. Do not prefix it with `VITE_` or expose it in client code. The generator is restricted to signed-in portfolio admins. It sends the chosen project images and sampled frames from selected videos to OpenAI only when the admin clicks **Generate details**; generated copy stays editable until the project is saved.
+
 ## Commands
 
 - `npm run dev` — start the Vite development server

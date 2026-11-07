@@ -25,6 +25,15 @@ function Video({ url }: { url: string }) {
   )
 }
 
+function isDirectVideo(url: string) {
+  if (url.startsWith('data:video/')) return true
+  try {
+    return /\.(mp4|webm|mov|m4v|ogv)$/i.test(new URL(url, window.location.origin).pathname)
+  } catch {
+    return false
+  }
+}
+
 export default function WorkPage() {
   const { site } = useSite()
   const { category = '', slug = '' } = useParams()
@@ -127,17 +136,32 @@ export default function WorkPage() {
         {gallery.length > 0 && (
           <div className="mt-14 columns-1 gap-5 sm:columns-2">
             {gallery.map((src, k) => (
-              <motion.img
-                key={src + k}
-                src={src}
-                alt=""
-                loading="lazy"
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.8 }}
-                className="mb-5 w-full break-inside-avoid rounded-[24px]"
-              />
+              isDirectVideo(src) ? (
+                <motion.video
+                  key={src + k}
+                  src={src}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.8 }}
+                  className="mb-5 w-full break-inside-avoid rounded-[24px] bg-coal"
+                />
+              ) : (
+                <motion.img
+                  key={src + k}
+                  src={src}
+                  alt=""
+                  loading="lazy"
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.8 }}
+                  className="mb-5 w-full break-inside-avoid rounded-[24px]"
+                />
+              )
             ))}
           </div>
         )}
