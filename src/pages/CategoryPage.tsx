@@ -6,11 +6,24 @@ import { useSite } from '../lib/site'
 import { useWorks } from '../hooks/useWorks'
 import NotFound from './NotFound'
 
+function isVideoUrl(src: string) {
+  if (src.startsWith('data:video/')) return true
+  try {
+    return /\.(mp4|webm|mov|m4v|ogv)$/i.test(new URL(src, window.location.origin).pathname)
+  } catch {
+    return false
+  }
+}
+
 export default function CategoryPage() {
   const { site } = useSite()
   const { category } = useParams()
   const cat = site.categories.find((c) => c.key === category)
   const works = useWorks(category)
+  const isDesigns = Boolean(cat && (cat.key === 'package' || cat.title.trim().toLowerCase() === 'designs'))
+  const designImages = (works ?? []).flatMap((work) =>
+    [...new Set([work.cover_url, ...work.gallery].filter((src): src is string => typeof src === 'string' && src.length > 0 && !isVideoUrl(src)))].map((src) => ({ work, src })),
+  )
 
   if (!cat) return <NotFound />
   const list = site.categories
@@ -40,15 +53,36 @@ export default function CategoryPage() {
         </header>
 
         {works === null ? (
+          isDesigns ? (
+            <div className="mt-12 columns-1 gap-5 sm:columns-2 xl:columns-3" aria-label="Loading designs gallery">
+              {[0, 1, 2].map((i) => <div key={i} className="mb-5 h-72 break-inside-avoid animate-pulse rounded-2xl bg-coal" />)}
+            </div>
+          ) : (
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[0, 1, 2].map((i) => (
               <div key={i} className="aspect-[4/5] animate-pulse rounded-[24px] bg-coal" />
             ))}
           </div>
+          )
         ) : works.length === 0 ? (
           <div className="mt-16 rounded-[28px] border border-dashed border-bone/15 p-16 text-center">
             <p className="font-hand text-3xl text-bone/60">Fresh work is on the way.</p>
           </div>
+        ) : isDesigns ? (
+          designImages.length === 0 ? (
+            <div className="mt-16 rounded-[28px] border border-dashed border-bone/15 p-16 text-center">
+              <p className="font-hand text-3xl text-bone/60">Fresh work is on the way.</p>
+            </div>
+          ) : (
+            <div className="mt-12 columns-1 gap-5 sm:columns-2 xl:columns-3">
+              {designImages.map(({ work, src }) => (
+                <Link key={`${work.id}-${src}`} to={`/projects/${cat.key}/${work.slug}`} className="group mb-5 block break-inside-avoid rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ember" aria-label={`Open ${work.title}`}>
+                  <img src={src} alt={work.title} loading="lazy" decoding="async" className="block h-auto w-full rounded-2xl bg-coal/40" />
+                  <p className="mt-3 text-sm font-medium text-bone transition-colors duration-200 group-hover:text-ember">{work.title}</p>
+                </Link>
+              ))}
+            </div>
+          )
         ) : (
           <div className="mt-12 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
             {works.map((w, i) => (
