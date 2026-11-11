@@ -1,9 +1,11 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { useSite } from '../lib/site'
+import StretchablePortrait from './StretchablePortrait'
 
-export default function SeatedPortrait({ className = '', entrance = false }: { className?: string; entrance?: boolean }) {
+export default function SeatedPortrait({ className = '', entrance = false, interactive = false }: { className?: string; entrance?: boolean; interactive?: boolean }) {
   const { site } = useSite()
   const reduceMotion = useReducedMotion()
+  const portrait = site.hero.profileImage || '/char/seated-portrait-cutout-v2.png'
   return (
     <motion.div
       className={`relative h-full w-full ${className}`}
@@ -19,7 +21,7 @@ export default function SeatedPortrait({ className = '', entrance = false }: { c
         transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
       />
       <motion.img
-        src={site.hero.profileImage || '/char/mr-me.png'}
+        src={portrait}
         alt="Muhammed Nabeel MP seated in his studio chair"
         draggable={false}
         className="pointer-events-none absolute inset-0 z-0 h-full w-full select-none object-contain object-bottom opacity-30 blur-[3px] [transform:translate3d(8px,10px,-18px)]"
@@ -30,15 +32,23 @@ export default function SeatedPortrait({ className = '', entrance = false }: { c
         animate={reduceMotion ? undefined : { scaleX: [0.94, 1.04, 0.94], opacity: [0.48, 0.68, 0.48] }}
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
       />
-      <motion.img
-        src={site.hero.profileImage || '/char/mr-me.png'}
-        alt="Muhammed Nabeel MP seated in his studio chair"
-        draggable={false}
-        className="relative z-[1] h-full w-full select-none object-contain object-bottom drop-shadow-[0_30px_28px_rgba(0,0,0,.54)] drop-shadow-[0_0_22px_rgba(255,113,55,.12)]"
+      <motion.div
+        className="relative z-[1] h-full w-full drop-shadow-[0_30px_28px_rgba(0,0,0,.54)] drop-shadow-[0_0_22px_rgba(255,113,55,.12)]"
         style={{ transformPerspective: 1200, transformStyle: 'preserve-3d' }}
         animate={reduceMotion ? undefined : { y: [0, -7, 0], rotateZ: [0, 0.35, 0], rotateY: [-0.7, 0.7, -0.7] }}
         transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut' }}
-      />
+      >
+        {interactive ? (
+          <StretchablePortrait src={portrait} />
+        ) : (
+          <img
+            src={portrait}
+            alt="Muhammed Nabeel MP seated in his studio chair"
+            draggable={false}
+            className="h-full w-full select-none object-contain object-bottom"
+          />
+        )}
+      </motion.div>
     </motion.div>
   )
 }

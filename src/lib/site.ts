@@ -117,7 +117,7 @@ export const defaultSite: SiteContent = {
     name: 'Muhammed Nabeel MP',
     sub: 'Designer · Storyteller',
     scrollLabel: 'Scroll',
-    profileImage: '/char/mr-me.png',
+    profileImage: '/char/seated-portrait-cutout-v2.png',
     realImage: '/me-original.jpg',
   },
   content: {
@@ -204,7 +204,7 @@ function normalizePortrait(site: SiteContent): SiteContent {
   if (
     image === '/char/rig.webp' ||
     image === '/char/seated-portrait.png' ||
-    image === '/char/seated-portrait-cutout-v2.png' ||
+    image === '/char/mr-me.png' ||
     image.startsWith('data:image/')
   ) {
     site.hero.profileImage = defaultSite.hero.profileImage
