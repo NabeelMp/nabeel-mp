@@ -8,7 +8,7 @@ const ease = [0.16, 1, 0.3, 1] as const
 
 export default function WhatIDo() {
   const { site } = useSite()
-  const { services, process, content } = site
+  const { services, content } = site
   const c = content.whatIDo
   return (
     <section id="what-i-do" className="relative bg-bone py-24 text-ink sm:py-32">
@@ -57,30 +57,6 @@ export default function WhatIDo() {
           })}
         </ul>
 
-        <div className="mt-16 sm:mt-20">
-          <Reveal>
-            <p className="eyebrow mb-8 text-center !text-ink/50">{c.processEyebrow}</p>
-          </Reveal>
-          <ol className="relative grid grid-cols-3 gap-y-8 md:grid-cols-6">
-            <span className="absolute left-[8%] right-[8%] top-[11px] hidden h-px bg-ink/15 md:block" />
-            {process.map((p, i) => (
-              <motion.li
-                key={p}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.15 }}
-                transition={{ duration: 0.38, delay: i * 0.035, ease }}
-                className="relative flex flex-col items-center text-center"
-              >
-                <span className="relative z-10 grid h-6 w-6 place-items-center rounded-full border border-ink/20 bg-bone">
-                  <span className="h-2 w-2 rounded-full bg-ember" />
-                </span>
-                <span className="mt-3 text-[10px] font-semibold text-ink/40">{String(i + 1).padStart(2, '0')}</span>
-                <span className="mt-1 text-xs font-bold uppercase tracking-[0.18em]">{p}</span>
-              </motion.li>
-            ))}
-          </ol>
-        </div>
       </div>
     </section>
   )

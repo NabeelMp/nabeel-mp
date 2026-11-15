@@ -4,6 +4,7 @@ import Nav from '../components/Nav'
 import Hero from '../components/Hero'
 import About from '../components/About'
 import WhatIDo from '../components/WhatIDo'
+import HowIWork from '../components/HowIWork'
 import Projects from '../components/Projects'
 import Reviews from '../components/Reviews'
 import Contact from '../components/Contact'
@@ -24,6 +25,7 @@ export default function Home() {
         <Hero />
         <About />
         <WhatIDo />
+        <HowIWork />
         <Projects />
         <Reviews />
         <Contact />
