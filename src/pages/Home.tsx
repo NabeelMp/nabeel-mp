@@ -20,7 +20,7 @@ export default function Home() {
 
   return (
     <>
-      <Nav heroMode />
+      <Nav />
       <main>
         <Hero />
         <About />
