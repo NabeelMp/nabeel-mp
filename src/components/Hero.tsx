@@ -1,7 +1,6 @@
 import { useCallback, useRef } from 'react'
 import { motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
-import SeatedPortrait from './SeatedPortrait'
 import { useSnapScroll } from '../hooks/useSnapScroll'
 import { scrollToId } from '../lib/scroll'
 import { useSite } from '../lib/site'
@@ -23,7 +22,7 @@ function GlassPrism() {
   return (
     <motion.div
       aria-hidden="true"
-      className="absolute right-[-8%] top-[13%] z-[1] h-[70svh] max-h-[760px] w-[68vw] max-w-[930px] sm:right-[0%] sm:top-[12%] sm:h-[78svh] sm:w-[59vw]"
+      className="absolute right-[-16%] top-[28.5%] z-[1] h-[43svh] max-h-[760px] w-[78vw] max-w-[930px] sm:right-[0%] sm:top-[12%] sm:h-[78svh] sm:w-[59vw]"
       style={{ rotateX, rotateY, transformPerspective: 1300, transformStyle: 'preserve-3d' }}
       animate={reduceMotion ? undefined : { y: [0, -9, 0], rotateZ: [0, -0.4, 0] }}
       transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
@@ -96,19 +95,11 @@ export default function Hero() {
       ref={ref}
       className="grain relative isolate h-[100svh] min-h-[640px] overflow-hidden bg-ink text-bone [background:radial-gradient(ellipse_at_77%_55%,rgba(255,79,13,.13),transparent_34%),radial-gradient(ellipse_at_77%_84%,rgba(255,83,13,.18),transparent_31%),linear-gradient(120deg,#080808,#0c0b0a_60%,#080706)]"
     >
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.14] [background-image:linear-gradient(90deg,transparent_19.9%,rgba(255,255,255,.16)_20%,transparent_20.1%,transparent_79.9%,rgba(255,255,255,.12)_80%,transparent_80.1%),linear-gradient(rgba(255,255,255,.04)_1px,transparent_1px)] [background-size:100%_100%,100%_130px]" />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-[13%] h-px bg-gradient-to-r from-transparent via-ember/60 to-transparent shadow-[0_0_24px_rgba(255,90,31,.55)]" />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-[20%] bg-[radial-gradient(ellipse_at_72%_100%,rgba(255,75,8,.32),transparent_52%)]" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-[16%] bg-[radial-gradient(ellipse_at_78%_100%,rgba(255,75,8,.2),transparent_54%)]" />
 
       <GlassPrism />
 
-      <div className="absolute bottom-0 right-[-3%] z-10 flex h-[43svh] justify-end sm:right-[0%] sm:h-[75svh] lg:right-[3%] lg:h-[88svh]">
-        <div className="relative aspect-[2/3] h-full max-h-[1050px]">
-          <SeatedPortrait entrance interactive />
-        </div>
-      </div>
-
-      <div className="absolute left-[5vw] top-[23%] z-20 w-[91vw] max-w-[820px] sm:top-[25%] sm:w-[57vw] lg:left-[4.2%] lg:top-[27%] lg:w-[52vw]">
+      <div className="absolute left-[5vw] top-[29%] z-20 w-[91vw] max-w-[820px] sm:top-[27%] sm:w-[57vw] lg:left-[4.2%] lg:top-[29%] lg:w-[52vw]">
         <motion.div
           className="mb-5 flex items-center gap-3 text-[10px] font-medium tracking-[0.28em] text-bone/55 sm:mb-7 sm:text-xs"
           initial={reduceMotion ? false : { opacity: 0, x: -18 }}
@@ -165,19 +156,6 @@ export default function Hero() {
           <span>Explore My Work</span>
         </motion.button>
 
-        <motion.div
-          className="mt-7 flex max-w-[530px] border-t border-bone/15 pt-4 sm:mt-9 sm:pt-5"
-          initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.88 }}
-        >
-          {site.profile.stats.slice(0, 3).map((stat, index) => (
-            <div key={stat.label} className={`min-w-0 flex-1 ${index > 0 ? 'border-l border-bone/20 pl-4 sm:pl-6' : ''} ${index < 2 ? 'mr-4 sm:mr-6' : ''}`}>
-              <p className="font-display text-xl leading-none sm:text-2xl">{stat.value}{stat.suffix}</p>
-              <p className="mt-1.5 text-[9px] leading-tight text-bone/45 sm:text-[11px]">{stat.label}</p>
-            </div>
-          ))}
-        </motion.div>
       </div>
 
       <motion.div
@@ -190,10 +168,6 @@ export default function Hero() {
         <span className="text-[10px] [writing-mode:vertical-rl]">{site.hero.scrollLabel}</span>
       </motion.div>
 
-      <div className="absolute inset-x-[4.2%] bottom-5 z-20 hidden items-center justify-between border-t border-bone/15 pt-3 text-[10px] text-bone/45 sm:flex">
-        <span>{site.profile.roles.join('   /   ')}</span>
-        <span className="flex items-center gap-5"><span>{site.profile.short}</span><span className="h-px w-16 bg-bone/30" /></span>
-      </div>
     </section>
   )
 }
