@@ -84,7 +84,7 @@ export default function Hero() {
   const reduceMotion = useReducedMotion()
   useSnapScroll(ref, 'about', useCallback(() => {}, []))
 
-  const phrase = site.profile.tagline.trim()
+  const phrase = site.profile.tagline.trim().replace(/[.!?]+$/, '').toUpperCase()
   const splitAt = phrase.lastIndexOf(' ')
   const firstLine = splitAt > 0 ? phrase.slice(0, splitAt) : phrase
   const accentLine = splitAt > 0 ? phrase.slice(splitAt + 1) : ''
