@@ -59,6 +59,8 @@ function Tile({ c, works, i }: { c: Category; works: Work[]; i: number }) {
                 key={src + k}
                 src={src}
                 alt=""
+                loading="lazy"
+                decoding="async"
                 className="absolute w-[46%] rounded-xl object-cover shadow-2xl"
                 style={{ aspectRatio: '4/5' }}
                 initial={false}

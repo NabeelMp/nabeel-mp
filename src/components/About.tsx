@@ -57,7 +57,7 @@ export default function About() {
               </div>
               <div className="card absolute inset-0 overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)]">
                 {photoOk ? (
-                  <img key={site.hero.realImage} src={site.hero.realImage} alt={profile.name} className="h-full w-full object-cover object-top" onError={() => setPhotoOk(false)} />
+                  <img key={site.hero.realImage} src={site.hero.realImage} alt={profile.name} loading="lazy" decoding="async" className="h-full w-full object-cover object-top" onError={() => setPhotoOk(false)} />
                 ) : (
                   <div className="grid h-full place-items-center bg-ash p-8 text-center font-display text-5xl text-bone/70">
                     {about.fallbackText.split('\n').map((line, i) => (

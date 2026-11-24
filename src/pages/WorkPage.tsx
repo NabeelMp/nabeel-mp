@@ -18,9 +18,9 @@ function Video({ url }: { url: string }) {
   return (
     <div className="aspect-video overflow-hidden rounded-[24px] bg-coal">
       {src ? (
-        <iframe src={src} title="Project video" className="h-full w-full" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />
+        <iframe src={src} title="Project video" loading="lazy" className="h-full w-full" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />
       ) : (
-        <video src={url} controls playsInline className="h-full w-full object-cover" />
+        <video src={url} controls playsInline preload="none" className="h-full w-full object-cover" />
       )}
     </div>
   )
@@ -115,6 +115,8 @@ export default function WorkPage() {
             <img
               src={work.cover_url}
               alt={work.title}
+              fetchPriority="high"
+              decoding="async"
               className={isDesigns ? 'block h-auto max-h-none w-full object-contain' : 'max-h-[80vh] w-full object-cover'}
             />
           </motion.div>
@@ -154,7 +156,7 @@ export default function WorkPage() {
                   src={src}
                   controls
                   playsInline
-                  preload="metadata"
+                  preload="none"
                   initial={{ opacity: 0, y: 40 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.15 }}
@@ -167,6 +169,7 @@ export default function WorkPage() {
                   src={src}
                   alt=""
                   loading="lazy"
+                  decoding="async"
                   initial={{ opacity: 0, y: 40 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.15 }}

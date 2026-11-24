@@ -1,9 +1,10 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { isSupabaseConfigured } from './supabase-config'
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const publishable = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined
 const legacyAnon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
 
-export const supabase: SupabaseClient | null = url && (publishable || legacyAnon) ? createClient(url, publishable || legacyAnon!) : null
+export const supabase: SupabaseClient | null = isSupabaseConfigured ? createClient(url!, (publishable || legacyAnon)!) : null
 export const isSupabaseReady = Boolean(supabase)
 export const WORKS_BUCKET = 'works'

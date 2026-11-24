@@ -297,6 +297,9 @@ export default function StretchablePortrait({ src, className = '' }: { src: stri
         src={src}
         alt="Muhammed Nabeel MP seated in his studio chair"
         draggable={false}
+        loading="eager"
+        fetchPriority="high"
+        decoding="async"
         className="absolute inset-0 h-full w-full select-none object-contain object-bottom"
       />
       {size.width > 0 && (

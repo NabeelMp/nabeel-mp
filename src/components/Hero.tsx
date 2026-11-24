@@ -1,16 +1,39 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import SeatedPortrait from './SeatedPortrait'
 import { useSnapScroll } from '../hooks/useSnapScroll'
 import { useSite } from '../lib/site'
 
 export default function Hero() {
   const { site } = useSite()
+  const reduceMotion = useReducedMotion()
   const WORD = (site.hero.word || 'PORTFOLIO').split('')
   const ref = useRef<HTMLElement>(null)
   const [stage, setStage] = useState<'intro' | 'character'>('intro')
   const [arrived, setArrived] = useState(false)
   useSnapScroll(ref, 'about', useCallback(() => {}, []))
+
+  const moveHero = useCallback((event: PointerEvent<HTMLElement>) => {
+    if (reduceMotion || (event.pointerType !== 'mouse' && event.pointerType !== 'pen')) return
+    const bounds = event.currentTarget.getBoundingClientRect()
+    const x = ((event.clientX - bounds.left) / bounds.width - 0.5) * 2
+    const y = ((event.clientY - bounds.top) / bounds.height - 0.5) * 2
+    event.currentTarget.querySelectorAll<HTMLElement>('.hero-parallax').forEach((layer) => {
+      const depth = Number(layer.dataset.parallaxDepth ?? 0)
+      const tilt = Number(layer.dataset.parallaxTilt ?? 0)
+      layer.style.setProperty('--parallax-x', `${(x * depth).toFixed(2)}px`)
+      layer.style.setProperty('--parallax-y', `${(y * depth).toFixed(2)}px`)
+      layer.style.setProperty('--parallax-rotate', `${(x * tilt).toFixed(2)}deg`)
+    })
+  }, [reduceMotion])
+
+  const resetHero = useCallback((event: PointerEvent<HTMLElement>) => {
+    event.currentTarget.querySelectorAll<HTMLElement>('.hero-parallax').forEach((layer) => {
+      layer.style.setProperty('--parallax-x', '0px')
+      layer.style.setProperty('--parallax-y', '0px')
+      layer.style.setProperty('--parallax-rotate', '0deg')
+    })
+  }, [])
 
   useEffect(() => {
     const t = setTimeout(() => setStage('character'), 650)
@@ -19,13 +42,13 @@ export default function Hero() {
   }, [])
 
   return (
-    <section id="home" ref={ref} className="grain relative h-[100svh] min-h-[560px] overflow-hidden bg-ink [background:radial-gradient(ellipse_at_50%_100%,rgba(255,90,31,.16),transparent_47%),radial-gradient(ellipse_at_50%_55%,#24201f_0%,#111010_53%,#080808_100%)]">
-      <div className="pointer-events-none absolute inset-x-[7%] top-[7%] bottom-[14%] rounded-[48%_48%_0_0] border-x border-t border-bone/[0.055] bg-[linear-gradient(90deg,rgba(255,255,255,.035),transparent_18%,rgba(255,255,255,.012)_50%,transparent_82%,rgba(255,255,255,.03)),linear-gradient(180deg,rgba(255,255,255,.035),transparent_34%)] shadow-[inset_0_0_100px_rgba(255,90,31,.035),0_0_80px_rgba(0,0,0,.45)] [transform:perspective(1100px)_rotateX(2deg)]" />
+    <section id="home" ref={ref} onPointerMove={moveHero} onPointerLeave={resetHero} className="grain relative h-[100svh] min-h-[560px] overflow-hidden bg-ink [background:radial-gradient(ellipse_at_50%_100%,rgba(255,90,31,.16),transparent_47%),radial-gradient(ellipse_at_50%_55%,#24201f_0%,#111010_53%,#080808_100%)] [perspective:1400px]">
+      <div data-parallax-depth="-10" data-parallax-tilt="-0.4" className="hero-parallax hero-parallax--arch pointer-events-none absolute inset-x-[7%] top-[7%] bottom-[14%] rounded-[48%_48%_0_0] border-x border-t border-bone/[0.055] bg-[linear-gradient(90deg,rgba(255,255,255,.035),transparent_18%,rgba(255,255,255,.012)_50%,transparent_82%,rgba(255,255,255,.03)),linear-gradient(180deg,rgba(255,255,255,.035),transparent_34%)] shadow-[inset_0_0_100px_rgba(255,90,31,.035),0_0_80px_rgba(0,0,0,.45)]" />
       <div className="pointer-events-none absolute left-[14%] top-[18%] h-[38%] w-px bg-gradient-to-b from-transparent via-ember/35 to-transparent shadow-[0_0_20px_rgba(255,90,31,.55)]" />
       <div className="pointer-events-none absolute right-[14%] top-[18%] h-[38%] w-px bg-gradient-to-b from-transparent via-bone/25 to-transparent shadow-[0_0_20px_rgba(255,255,255,.2)]" />
-      <div className="pointer-events-none absolute left-[12%] top-[19%] h-28 w-24 rounded-full bg-ember/10 blur-3xl sm:h-40 sm:w-36" />
-      <div className="pointer-events-none absolute right-[12%] top-[18%] h-32 w-28 rounded-full bg-orange-100/[0.07] blur-3xl sm:h-44 sm:w-40" />
-      <div className="pointer-events-none absolute inset-x-[-12%] bottom-[-3%] h-[31%] opacity-25 [background-image:linear-gradient(rgba(255,255,255,.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.12)_1px,transparent_1px)] [background-size:64px_38px] [mask-image:linear-gradient(to_top,black,transparent_95%)] [transform:perspective(420px)_rotateX(54deg)] [transform-origin:bottom]" />
+      <div data-parallax-depth="-18" data-parallax-tilt="-0.7" className="hero-parallax pointer-events-none absolute left-[12%] top-[19%] h-28 w-24 rounded-full bg-ember/10 blur-3xl sm:h-40 sm:w-36" />
+      <div data-parallax-depth="-18" data-parallax-tilt="-0.7" className="hero-parallax pointer-events-none absolute right-[12%] top-[18%] h-32 w-28 rounded-full bg-orange-100/[0.07] blur-3xl sm:h-44 sm:w-40" />
+      <div data-parallax-depth="12" data-parallax-tilt="0.5" className="hero-parallax hero-parallax--floor pointer-events-none absolute inset-x-[-12%] bottom-[-3%] h-[31%] opacity-25 [background-image:linear-gradient(rgba(255,255,255,.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.12)_1px,transparent_1px)] [background-size:64px_38px] [mask-image:linear-gradient(to_top,black,transparent_95%)]" />
       <div className="pointer-events-none absolute inset-x-[10%] bottom-0 h-[42%] rounded-[50%_50%_0_0] border-x border-t border-bone/[0.045] bg-[linear-gradient(180deg,rgba(255,255,255,.018),transparent_38%)] [transform:perspective(900px)_rotateX(8deg)]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/50 to-transparent" />
       <motion.div
@@ -35,7 +58,7 @@ export default function Hero() {
         transition={{ duration: 1.1, ease: 'easeOut' }}
       />
 
-      <div className="pointer-events-none absolute inset-x-0 top-[15%] z-0 flex justify-center sm:top-[12%]">
+      <div data-parallax-depth="12" data-parallax-tilt="0.5" className="hero-parallax pointer-events-none absolute inset-x-0 top-[15%] z-0 flex justify-center sm:top-[12%]">
         <motion.p
           aria-hidden="true"
           className="font-tall flex select-none leading-none text-bone/35"
@@ -78,7 +101,7 @@ export default function Hero() {
       </motion.div>
 
       {stage === 'character' && (
-        <div className="absolute inset-x-0 bottom-3 z-10 flex justify-center sm:bottom-5">
+        <div data-parallax-depth="20" data-parallax-tilt="1.2" className="hero-parallax absolute inset-x-0 bottom-3 z-10 flex justify-center sm:bottom-5">
           <div className="relative aspect-[2/3] h-[min(94svh,1000px)] sm:h-[min(100svh,1100px)] max-w-[105vw]">
             <SeatedPortrait entrance interactive />
           </div>

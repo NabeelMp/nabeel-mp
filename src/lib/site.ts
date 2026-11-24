@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { Category } from './types'
-import { supabase } from './supabase'
+import { isSupabaseConfigured } from './supabase-config'
 
 export const SITE_KEY = 'nabeel.site'
 
@@ -231,7 +231,7 @@ export function loadSite(): SiteContent {
   if (typeof window === 'undefined') return defaultSite
   try {
     // In cloud mode the shared database is authoritative; don't seed it from one browser's cache.
-    if (supabase) return defaultSite
+    if (isSupabaseConfigured) return defaultSite
     const raw = localStorage.getItem(SITE_KEY)
     if (!raw) return defaultSite
     return normalizePortrait(merge(defaultSite, JSON.parse(raw)))
@@ -260,20 +260,27 @@ const SiteContext = createContext<SiteContextValue | null>(null)
 
 export function SiteProvider({ children }: { children: ReactNode }) {
   const [site, setSite] = useState<SiteContent>(() => loadSite())
-  const [syncStatus, setSyncStatus] = useState<SiteContextValue['syncStatus']>(supabase ? 'loading' : 'local-only')
+  const [syncStatus, setSyncStatus] = useState<SiteContextValue['syncStatus']>(isSupabaseConfigured ? 'loading' : 'local-only')
   const sharedSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const sharedSaveQueue = useRef<Promise<void>>(Promise.resolve())
 
   useEffect(() => {
-    if (!supabase) return
     let active = true
-    void supabase
-      .from('site_settings')
-      .select('content')
-      .eq('id', 'portfolio')
-      .maybeSingle()
-      .then(({ data, error }) => {
+    if (!isSupabaseConfigured) return
+    void import('./supabase').then(({ supabase }) => {
+      if (!supabase) return
+      return supabase
+        .from('site_settings')
+        .select('content')
+        .eq('id', 'portfolio')
+        .maybeSingle()
+      .then((result) => {
         if (!active) return
+        if (!result) {
+          setSyncStatus('local-only')
+          return
+        }
+        const { data, error } = result
         if (error) {
           console.error('Could not load shared site settings:', error.message)
           setSyncStatus('error')
@@ -286,22 +293,28 @@ export function SiteProvider({ children }: { children: ReactNode }) {
         }
         setSyncStatus('shared')
       })
+      .catch((error: unknown) => {
+        if (!active) return
+        console.error('Could not initialize shared site settings:', error)
+        setSyncStatus('error')
+      })
     return () => { active = false }
   }, [])
 
   const persistShared = useCallback((next: SiteContent) => {
-    if (!supabase) {
+    if (!isSupabaseConfigured) {
       setSyncStatus('local-only')
       return
     }
-    const client = supabase
     if (sharedSaveTimer.current) clearTimeout(sharedSaveTimer.current)
     setSyncStatus('loading')
     sharedSaveTimer.current = setTimeout(() => {
       sharedSaveQueue.current = sharedSaveQueue.current
         .catch(() => undefined)
         .then(async () => {
-          const { error } = await client
+          const { supabase } = await import('./supabase')
+          if (!supabase) { setSyncStatus('local-only'); return }
+          const { error } = await supabase
             .from('site_settings')
             .upsert({ id: 'portfolio', content: next, updated_at: new Date().toISOString() })
           if (error) {

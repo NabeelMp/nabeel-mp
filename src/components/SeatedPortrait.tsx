@@ -22,8 +22,10 @@ export default function SeatedPortrait({ className = '', entrance = false, inter
       />
       <motion.img
         src={portrait}
-        alt="Muhammed Nabeel MP seated in his studio chair"
+        alt=""
         draggable={false}
+        loading={entrance ? 'eager' : 'lazy'}
+        decoding="async"
         className="pointer-events-none absolute inset-0 z-0 h-full w-full select-none object-contain object-bottom opacity-30 blur-[3px] [transform:translate3d(8px,10px,-18px)]"
         aria-hidden="true"
       />
@@ -45,6 +47,9 @@ export default function SeatedPortrait({ className = '', entrance = false, inter
             src={portrait}
             alt="Muhammed Nabeel MP seated in his studio chair"
             draggable={false}
+            loading={entrance ? 'eager' : 'lazy'}
+            fetchPriority={entrance ? 'high' : 'auto'}
+            decoding="async"
             className="h-full w-full select-none object-contain object-bottom"
           />
         )}

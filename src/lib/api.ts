@@ -1,6 +1,10 @@
 import { seedReviews, seedWorks } from './data'
-import { supabase, WORKS_BUCKET } from './supabase'
+import { isSupabaseConfigured } from './supabase-config'
 import type { CategoryKey, NewReview, NewWork, Review, Work } from './types'
+
+const getSupabase = () => isSupabaseConfigured
+  ? import('./supabase')
+  : Promise.resolve({ supabase: null, WORKS_BUCKET: 'works' })
 
 // Without Supabase env vars the site runs on seed data persisted to localStorage (demo mode).
 const LS_WORKS = 'nabeel.works'
@@ -18,6 +22,7 @@ const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Math.random().toStr
 const byNewest = <T extends { created_at: string }>(a: T, b: T) => b.created_at.localeCompare(a.created_at)
 
 export async function listWorks(category?: CategoryKey): Promise<Work[]> {
+  const { supabase } = await getSupabase()
   if (supabase) {
     let q = supabase.from('works').select('*').order('created_at', { ascending: false })
     if (category) q = q.eq('category', category)
@@ -43,19 +48,26 @@ export function subscribeToWorks(onChange: () => void): () => void {
   window.addEventListener('storage', refreshFromStorage)
   document.addEventListener('visibilitychange', refreshWhenVisible)
 
-  const channel = supabase?.channel('portfolio-works-live')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'works' }, onChange)
-    .subscribe()
+  let channel: ReturnType<NonNullable<Awaited<ReturnType<typeof getSupabase>>['supabase']>['channel']> | undefined
+  let disposed = false
+  void getSupabase().then(({ supabase }) => {
+    if (!supabase || disposed) return
+    channel = supabase.channel('portfolio-works-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'works' }, onChange)
+      .subscribe()
+  })
 
   return () => {
     window.removeEventListener('focus', refreshWhenVisible)
     window.removeEventListener('storage', refreshFromStorage)
     document.removeEventListener('visibilitychange', refreshWhenVisible)
-    if (channel) void supabase?.removeChannel(channel)
+    disposed = true
+    if (channel) void getSupabase().then(({ supabase }) => supabase?.removeChannel(channel!))
   }
 }
 
 export async function getWork(category: string, slug: string): Promise<Work | null> {
+  const { supabase } = await getSupabase()
   if (supabase) {
     const { data, error } = await supabase.from('works').select('*').eq('category', category).eq('slug', slug).maybeSingle()
     if (!error) return data as Work | null
@@ -65,6 +77,7 @@ export async function getWork(category: string, slug: string): Promise<Work | nu
 }
 
 export async function createWork(work: NewWork): Promise<Work> {
+  const { supabase } = await getSupabase()
   if (supabase) {
     const { data, error } = await supabase.from('works').insert(work).select().single()
     if (error) throw error
@@ -78,6 +91,7 @@ export async function createWork(work: NewWork): Promise<Work> {
 /** Create a batch of works in one database request (or one local write). */
 export async function createWorks(works: NewWork[]): Promise<void> {
   if (works.length === 0) return
+  const { supabase } = await getSupabase()
   if (supabase) {
     const { error } = await supabase.from('works').insert(works)
     if (error) throw error
@@ -88,6 +102,7 @@ export async function createWorks(works: NewWork[]): Promise<void> {
 }
 
 export async function updateWork(id: string, patch: Partial<NewWork>): Promise<Work> {
+  const { supabase } = await getSupabase()
   if (supabase) {
     const { data, error } = await supabase.from('works').update(patch).eq('id', id).select().single()
     if (error) throw error
@@ -102,6 +117,7 @@ export async function updateWork(id: string, patch: Partial<NewWork>): Promise<W
 }
 
 export async function deleteWork(id: string): Promise<void> {
+  const { supabase } = await getSupabase()
   if (supabase) {
     const { error } = await supabase.from('works').delete().eq('id', id)
     if (error) throw error
@@ -112,6 +128,7 @@ export async function deleteWork(id: string): Promise<void> {
 }
 
 export async function listReviews(opts: { workId?: string; fiveStarOnly?: boolean } = {}): Promise<Review[]> {
+  const { supabase } = await getSupabase()
   if (supabase) {
     let q = supabase.from('reviews').select('*').order('created_at', { ascending: false })
     if (opts.workId) q = q.eq('work_id', opts.workId)
@@ -127,6 +144,7 @@ export async function listReviews(opts: { workId?: string; fiveStarOnly?: boolea
 }
 
 export async function addReview(review: NewReview): Promise<Review> {
+  const { supabase } = await getSupabase()
   if (supabase) {
     const { data, error } = await supabase.from('reviews').insert(review).select().single()
     if (error) throw error
@@ -138,6 +156,7 @@ export async function addReview(review: NewReview): Promise<Review> {
 }
 
 export async function deleteReview(id: string): Promise<void> {
+  const { supabase } = await getSupabase()
   if (supabase) {
     const { error } = await supabase.from('reviews').delete().eq('id', id)
     if (error) throw error
@@ -147,6 +166,7 @@ export async function deleteReview(id: string): Promise<void> {
 }
 
 export async function uploadMedia(file: File): Promise<string> {
+  const { supabase, WORKS_BUCKET } = await getSupabase()
   if (supabase) {
     const path = `${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
     const { error } = await supabase.storage.from(WORKS_BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined })

@@ -32,6 +32,17 @@ html { scroll-behavior: auto; -webkit-tap-highlight-color: transparent; }
 body { @apply bg-ink text-bone font-sans antialiased; overflow-x: hidden; transition: background-color .4s ease, color .4s ease; }
 ::selection { background: #ff5a1f; color: #070707; }
 
+.hero-parallax {
+  transform: var(--parallax-base, translateZ(0)) translate3d(var(--parallax-x, 0px), var(--parallax-y, 0px), 0) rotateY(var(--parallax-rotate, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 220ms cubic-bezier(.2,.75,.25,1);
+}
+.hero-parallax--arch { --parallax-base: perspective(1100px) rotateX(2deg); }
+.hero-parallax--floor { --parallax-base: perspective(420px) rotateX(54deg); transform-origin: bottom; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-parallax { transform: none !important; transition: none !important; }
+}
+
 @layer components {
   .container-x { @apply mx-auto w-full max-w-[1320px] px-5 sm:px-8 lg:px-12; }
   .eyebrow { @apply font-sans text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.35em] text-bone/50; }

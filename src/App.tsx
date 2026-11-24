@@ -1,10 +1,11 @@
-import { useEffect } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
-import Home from './pages/Home'
-import CategoryPage from './pages/CategoryPage'
-import WorkPage from './pages/WorkPage'
-import Admin from './pages/Admin'
-import NotFound from './pages/NotFound'
+
+const Home = lazy(() => import('./pages/Home'))
+const CategoryPage = lazy(() => import('./pages/CategoryPage'))
+const WorkPage = lazy(() => import('./pages/WorkPage'))
+const Admin = lazy(() => import('./pages/Admin'))
+const NotFound = lazy(() => import('./pages/NotFound'))
 
 function ScrollReset() {
   const { pathname, hash } = useLocation()
@@ -18,13 +19,15 @@ export default function App() {
   return (
     <>
       <ScrollReset />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/projects/:category" element={<CategoryPage />} />
-        <Route path="/projects/:category/:slug" element={<WorkPage />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <Suspense fallback={<div className="min-h-screen bg-ink" aria-label="Loading page" />}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/projects/:category" element={<CategoryPage />} />
+          <Route path="/projects/:category/:slug" element={<WorkPage />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
     </>
   )
 }
